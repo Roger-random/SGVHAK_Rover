@@ -1,0 +1,32 @@
+<!doctype html>
+<head>
+  <title>SGVHAK Rover</title>
+  <meta charset="utf-8" />
+  <!-- Materialize: Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" type="text/css" href=".{{url_for('static', filename='style.css', a=2)}}">
+</head>
+<body>
+  <!--Import jQuery before materialize.js-->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <!-- Materialize: Compiled and minified JavaScript -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+
+  <script type="text/javascript">
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    Materialize.toast('{{message}}', 4000, 'flash {{category}}')
+  {% endfor %}
+  </script>
+  <nav class="nav-extended blue darken-4">
+    <div class="nav-wrapper container">
+      <a href="/" class="left brand-logo">SGVHAK Rover</a>
+      <div class="right">
+        <a class="waves-effect waves-light btn red darken-4" href="{{url_for('stop_motors')}}">Stop Motors</a>
+      </div>
+    </div>
+  </nav>
+  {% block body %}{% endblock %}
+</body>

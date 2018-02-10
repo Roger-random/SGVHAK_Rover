@@ -1,0 +1,10 @@
+.flash {
+  background: gray;
+  color: white;
+}
+.flash.success {
+  background: darkgreen;
+}
+.flash.error {
+  background: maroon;
+}
