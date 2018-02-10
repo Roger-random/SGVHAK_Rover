@@ -2,6 +2,7 @@
 Main UI server and associated software for SGVHAK rover project.
 ---
 Written under `python 2.7.14` with associated `pip 9.0.1`
+- Python version dictated by Ion Motion Control's RoboClaw Python API, which is written for 2.7. See http://forums.ionmc.com/viewtopic.php?f=2&t=542
 
 ### `virtualenv` recommended to help keep Python libraries separate.
 - Install virtualenv `pip install virtualenv`
