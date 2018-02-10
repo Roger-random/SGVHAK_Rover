@@ -8,3 +8,7 @@
 .flash.error {
   background: maroon;
 }
+
+.center_header {
+  text-align: center;
+}

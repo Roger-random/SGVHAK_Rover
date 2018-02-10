@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-Hello World! I'm a placeholder for index.html
+  <h4 class="center_header">Main Menu</h4>
+  <div class="row">
+    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive</a>
+  </div>
+  <div class="row">
+    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
+  </div>
+  <div class="row">
+    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_test')}}">Chasis Test</a>
+  </div>
 </div>
 {% endblock %}
