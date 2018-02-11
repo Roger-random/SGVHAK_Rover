@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+  <h4 class="center_header">Chassis Configuraton</h4>
+  <ul>
+    {% for wheel in wheels %}
+      <li>X={{wheel['x']}}, Y={{wheel['y']}}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

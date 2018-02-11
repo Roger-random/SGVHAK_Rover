@@ -1,5 +1,8 @@
 from SGVHAK_Rover import app
 from flask import flash, render_template
+from roverchassis import roverchassis
+
+chassis = roverchassis()
 
 class main_menu:
 
@@ -19,8 +22,9 @@ class main_menu:
 
   @app.route('/chassis_config')
   def chassis_config():
-    flash("chassis_config placeholder","success")
-    return render_template("index.html")
+    chassis.loadDist()
+    return render_template("chassis_config.html",
+      wheels = chassis.wheels)
 
   @app.route('/chassis_test')
   def chassis_test():
