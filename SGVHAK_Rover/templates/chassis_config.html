@@ -2,10 +2,16 @@
 {% block body %}
 <div class="container">
   <h4 class="center_header">Chassis Configuraton</h4>
-  <ul>
-    {% for wheel in wheels %}
-      <li>X={{wheel['x']}}, Y={{wheel['y']}}</li>
+    {% for wheelTableRow in wheelTable.values() %}
+      <div class="row">
+        {% for wheelTableColumn in wheelTableRow.values() %}
+          <div class="col s3 center-align">
+            {% for wheel in wheelTableColumn %}
+              {{wheel['x']}},{{wheel['y']}}
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
     {% endfor %}
-  </ul>
 </div>
 {% endblock %}
