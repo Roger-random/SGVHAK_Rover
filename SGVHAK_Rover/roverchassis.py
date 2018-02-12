@@ -46,6 +46,7 @@ class chassis:
       Dimensions are in inches.
     """
     self.wheels.append(dict([
+      ('name','front_left'),
       ('x',-7.254),
       ('y',10.5),
       ('rolling', dict([('address',128),
@@ -53,6 +54,7 @@ class chassis:
                         ('inverted',True)])),
       ('steering', None)]))
     self.wheels.append(dict([
+      ('name','mid_left'),
       ('x',-10.073),
       ('y',0),
       ('rolling', dict([('address',128),
@@ -60,6 +62,7 @@ class chassis:
                         ('inverted',True)])),
       ('steering', None)]))
     self.wheels.append(dict([
+      ('name','rear_left'),
       ('x',-7.254),
       ('y',-10.5),
       ('rolling', dict([('address',129),
@@ -67,6 +70,7 @@ class chassis:
                         ('inverted',True)])),
       ('steering', None)]))
     self.wheels.append(dict([
+      ('name','front_right'),
       ('x',7.254),
       ('y',10.5),
       ('rolling', dict([('address',129),
@@ -74,6 +78,7 @@ class chassis:
                         ('inverted',False)])),
       ('steering', None)]))
     self.wheels.append(dict([
+      ('name','mid_right'),
       ('x',10.073),
       ('y',0),
       ('rolling', dict([('address',130),
@@ -81,6 +86,7 @@ class chassis:
                         ('inverted',False)])),
       ('steering', None)]))
     self.wheels.append(dict([
+      ('name','rear_right'),
       ('x',7.254),
       ('y',-10.5),
       ('rolling', dict([('address',130),

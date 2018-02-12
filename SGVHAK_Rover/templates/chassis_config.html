@@ -32,6 +32,7 @@ SOFTWARE.
           <td class="center-align">
             {% for wheel in wheelTableColumn %}
             <div class="container blue lighten-4">
+              <b>{{wheel['name']}}</b><br/>
               ({{wheel['x']}},{{wheel['y']}})<br/>
               {% if wheel['rolling'] == None %}
                 Freewheel
