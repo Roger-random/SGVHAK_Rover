@@ -25,35 +25,37 @@ SOFTWARE.
 {% block body %}
 <div class="container">
   <h4 class="center_header">Chassis Configuraton</h4>
-    <table>
-    {% for wheelTableRow in wheelTable.values() %}
-      <tr>
-        {% for wheelTableColumn in wheelTableRow.values() %}
-          <td class="center-align">
-            {% for wheel in wheelTableColumn %}
-            <div class="container blue lighten-4">
-              <b>{{wheel['name']}}</b><br/>
-              ({{wheel['x']}},{{wheel['y']}})<br/>
-              {% if wheel['rolling'] == None %}
-                Freewheel
-              {% else %}
-                Rolling: M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
-                {% if wheel['rolling']['inverted'] == True %}
-                  (Inverted)
-                {% endif %}
-                <br/>
-              {% endif %}
-              {% if wheel['steering'] == None %}
-                Steering: Fixed
-              {% else %}
-                Steering: TBD
-              {% endif %}
-            </div>
-            {% endfor %}
-          </td>
+  <table>
+  {% for wheelTableRow in wheelTable.values() %}
+    <tr>
+      {% for wheelTableColumn in wheelTableRow.values() %}
+      <td class="center-align">
+        {% for wheel in wheelTableColumn %}
+        <div class="container blue lighten-4">
+          <b>{{wheel['name']}}</b>
+          <br/>
+          ({{wheel['x']}},{{wheel['y']}})
+          <br/>
+          {% if wheel['rolling'] == None %}
+            Freewheel
+          {% else %}
+            Rolling: M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
+            {% if wheel['rolling']['inverted'] == True %}
+              (Inverted)
+            {% endif %}
+          {% endif %}
+          <br/>
+          {% if wheel['steering'] == None %}
+            Steering: Fixed
+          {% else %}
+            Steering: TBD
+          {% endif %}
+        </div>
         {% endfor %}
-      </tr>
-    {% endfor %}
-    </table>
+      </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  </table>
 </div>
 {% endblock %}
