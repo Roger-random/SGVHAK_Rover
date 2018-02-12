@@ -25,12 +25,14 @@ SOFTWARE.
 {% block body %}
 <div class="container">
   <h4 class="center_header">Chassis Configuraton</h4>
+    <table>
     {% for wheelTableRow in wheelTable.values() %}
-      <div class="row">
+      <tr>
         {% for wheelTableColumn in wheelTableRow.values() %}
-          <div class="col s3 center-align">
+          <td class="center-align">
             {% for wheel in wheelTableColumn %}
-              {{wheel['x']}},{{wheel['y']}}<br/>
+            <div class="container blue lighten-4">
+              ({{wheel['x']}},{{wheel['y']}})<br/>
               {% if wheel['rolling'] == None %}
                 Freewheel
               {% else %}
@@ -45,10 +47,12 @@ SOFTWARE.
               {% else %}
                 Steering: TBD
               {% endif %}
+            </div>
             {% endfor %}
-          </div>
+          </td>
         {% endfor %}
-      </div>
+      </tr>
     {% endfor %}
+    </table>
 </div>
 {% endblock %}
