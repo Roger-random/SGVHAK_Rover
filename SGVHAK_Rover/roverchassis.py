@@ -21,8 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import json
-import io
+import math
+
+# Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
+infinity = float("inf")
 
 class chassis:
   """ 
@@ -39,9 +41,35 @@ class chassis:
     #     front and to the right of rover center will have positive X and Y.
     self.wheels = list()
 
+    # When turning radius grows beyond this point, the wheel angles are so
+    #   miniscule it is indistinguishable from straight line travel.
+    self.maxRadius = 250 # TODO: calculate based on chassis configuration.
+
+    # Radius representing the tightest turn this chassis can make. Minimum
+    #   value of zero indicates chassis is capable of turning in place.
+    self.minRadius = 20 # TODO: calculate based on chassis configuration.
+
+    # The current (velocity, radius) that dictated wheel angle and velocity.
+    #   Velocity unit is up to the caller, math works regardless of units
+    #     inches, metric, quadrature pulses, etc.
+    #   Radius unit must match those used to specify wheel coordinates.
+    self.currentMotion = (0, infinity)
+
+    # Dictionary of wheel angles calculated from currentMotion.
+    #  Keys = the names of wheels
+    #  Values = angle of wheel in degrees. Straight forward is zero degrees,
+    #    positive angle indicates turning rover right.
+    self.angles = dict()
+
+    # Dictionary of wheel velocity calculated from currentMotion.
+    #  Keys = the names of wheels
+    #  Values = velocity of wheel in the same unit given in currentMotion.
+    self.velocity = dict()
+
   def testWheels(self):
     """
-    Use a set of hard-coded values for wheels.
+    Use a set of hard-coded values for wheels. Will eventually be replaced
+    by a configuration file read from disk.
     The order and the X,Y locations are taken from the reference chassis.
       Dimensions are in inches.
     """
@@ -93,3 +121,45 @@ class chassis:
                         ('motor',2),
                         ('inverted',False)])),
       ('steering', None)]))
+
+  def updateMotion(self, velocity, radius=infinity):
+    """
+    Given the desired velocity and turning radius, update the angle and
+    velocity required for each wheel to perform the desired motion.
+
+    Velocity and radius is given relative to rover center.
+
+    Radius of zero indicates a turn-in-place movement. (Not yet implemented)
+    Radius of infinity indicates movement in a straight line.
+    """
+    self.currentMotion = (velocity, radius)
+    self.angles.clear()
+    self.velocity.clear()
+
+    if radius > self.maxRadius:
+      # Straight line travel
+      for wheel in self.wheels:
+        name = wheel['name']
+        self.angles[name] = 0
+        self.velocity[name] = velocity
+    elif abs(radius) < self.minRadius:
+      raise ValueError("Radius below minimum")
+    else:
+      for wheel in self.wheels:
+        name = wheel['name']
+
+        # Dimensions of triangle used to calculate wheel geometry,
+        # in form of opposite, adjacent, and hypotenuse
+        opp = wheel['y']
+        adj = radius-wheel['x']
+        hyp = math.sqrt(pow(opp,2) + pow(adj,2))
+
+        if adj == 0:
+          self.angles[name] = 90
+        else:
+          self.angles[name] = math.degrees(math.atan(float(opp)/float(adj)))
+
+        if radius == 0:
+          self.velocity[name] = 0 # TODO: Velocity calculation for turn-in-place where radius is zero
+        else:
+          self.velocity[name] = velocity * hyp/abs(radius)
