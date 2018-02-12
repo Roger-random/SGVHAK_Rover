@@ -23,9 +23,9 @@ SOFTWARE.
 """
 from SGVHAK_Rover import app
 from flask import flash, render_template
-from roverchassis import roverchassis
+import roverchassis
 
-chassis = roverchassis()
+chassis = roverchassis.chassis()
 
 class main_menu:
 
@@ -45,7 +45,8 @@ class main_menu:
 
   @app.route('/chassis_config')
   def chassis_config():
-    chassis.loadDist()
+    if len(chassis.wheels)==0:
+      chassis.testWheels()
     rows = set()
     columns = set()
     # Count the unique X/Y coordinates into columns/rows

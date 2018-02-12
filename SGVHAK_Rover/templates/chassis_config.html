@@ -30,7 +30,21 @@ SOFTWARE.
         {% for wheelTableColumn in wheelTableRow.values() %}
           <div class="col s3 center-align">
             {% for wheel in wheelTableColumn %}
-              {{wheel['x']}},{{wheel['y']}}
+              {{wheel['x']}},{{wheel['y']}}<br/>
+              {% if wheel['rolling'] == None %}
+                Freewheel
+              {% else %}
+                Rolling: M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
+                {% if wheel['rolling']['inverted'] == True %}
+                  (Inverted)
+                {% endif %}
+                <br/>
+              {% endif %}
+              {% if wheel['steering'] == None %}
+                Steering: Fixed
+              {% else %}
+                Steering: TBD
+              {% endif %}
             {% endfor %}
           </div>
         {% endfor %}
