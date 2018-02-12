@@ -143,12 +143,14 @@ class chassis:
         self.angles[name] = 0
         self.velocity[name] = velocity
     elif abs(radius) < self.minRadius:
+      # This chassis configuration could not make that tight of a turn.
       raise ValueError("Radius below minimum")
     else:
+      # Calculate angle and velocity for each wheel
       for wheel in self.wheels:
         name = wheel['name']
 
-        # Dimensions of triangle used to calculate wheel geometry,
+        # Dimensions of triangle representing the wheel. Wsed for calculations
         # in form of opposite, adjacent, and hypotenuse
         opp = wheel['y']
         adj = radius-wheel['x']
