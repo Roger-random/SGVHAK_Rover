@@ -21,7 +21,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import roboclaw
+from roboclaw import Roboclaw
+
+def apiget(resultTuple, errorMessage="RoboClaw API Getter"):
+  """
+  Every read operation from the Roboclaw API returns a tuple: index zero
+  is 1 for success and 0 for failure. This helper looks for that zero and
+  raises an exception if one is seen. If an optional error message was
+  provided, it is sent into the ValueError constructor.
+
+  In the normal case of success, if there was only one other element in
+  the resultTuple, that element is returned by itself (not a single
+  element tuple) If there are more than one, the result is a tuple.
+  """
+  if resultTuple[0] == 0:
+    raise ValueError("{} {}".format(errorMessage, str(resultTuple)))
+
+  if len(resultTuple) == 2:
+    return resultTuple[1]
+  else:
+    return resultTuple[1:]
+
+def apiset(result, errorMessage="RoboClaw API Setter"):
+  """
+  Every write operation returns true if successful. If it does not, a
+  ValueError is raised with the optional error message parameter
+  """
+  if not result:
+    raise ValueError(errorMessage)
 
 class roboclaw_wrapper:
   """
@@ -63,18 +90,27 @@ class roboclaw_wrapper:
     if len(id) != 2:
       raise ValueError("RoboClaw motor identifier must have two elements: address and motor number")
 
-    if isinstance(id[0], int):
+    if not isinstance(id[0], int):
       raise ValueError("RoboClaw address must be an integer")
 
     if id[0] < 128 or id[0] > 135:
       raise ValueError("RoboClaw address must be in the range of 128 to 135 (inclusive)")
 
-    if isinstance(id[1], int):
+    if not isinstance(id[1], int):
       raise ValueError("RoboClaw motor number must be an integer")
 
     if id[1] != 1 and id[1] != 2:
       raise ValueError("RoboClaw motor number must be 1 or 2")
 
+    return id
+
+  def check_roboclaw(self):
+    """
+    Check to make sure we've already connected to a RoboClaw. This should be
+    called before every RoboClaw command.
+    """
+    if not self.connected():
+      raise ValueError("RoboClaw not yet connected")
 
   def connect(self, parameters):
     """
@@ -92,24 +128,26 @@ class roboclaw_wrapper:
     else:
       raise ValueError("Could not connect to RoboClaw with provided parameters")
 
-  def check_roboclaw(self):
-    """
-    Check to make sure we've already connected to a RoboClaw. This should be
-    called before every RoboClaw command.
-    """
-    if self.roboclaw == None:
-      raise ValueError("RoboClaw not yet connected")
+  def connected(self):
+    """Returns True if we have connected Roboclaw API to a serial port"""
+    return self.roboclaw != None
+
+  def version(self, id):
+    """Returns a version string for display"""
+    address, motor = self.check_id(id)
+    self.check_roboclaw()
+
+    return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
 
   def velocity(self, velocity, id):
     """
     Run the specified motor (address,motor#) at the specified velocity.
     (quadrature pulses per second)
     """
-    address, motor = check_id(id)
-
-    check_roboclaw()
+    address, motor = self.check_id(id)
+    self.check_roboclaw()
 
     if motor==1:
-      self.roboclaw.SpeedM1(address, velocity)
+      apiset(self.roboclaw.SpeedM1(address, velocity), "Velocity {} on RoboClaw M1@{}".format(velocity, address))
     else:
-      self.roboclaw.SpeedM2(address, velocity)
+      apiset(self.roboclaw.SpeedM2(address, velocity), "Velocity {} on RoboClaw M2@{}".format(velocity, address))

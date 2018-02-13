@@ -43,6 +43,8 @@ SOFTWARE.
             {% if wheel['rolling']['inverted'] == True %}
               (Inverted)
             {% endif %}
+            <br/>
+            {{roboclaw_table[wheel['name']]}}
           {% endif %}
           <br/>
           {% if wheel['steering'] == None %}

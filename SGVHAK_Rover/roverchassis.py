@@ -122,6 +122,48 @@ class chassis:
                         ('inverted',False)])),
       ('steering', None)]))
 
+  def wheelDisplayTable(self):
+    """
+    Generate a table representing all the wheels for display in chassis 
+    configuraton menu
+    """
+    rows = set()
+    columns = set()
+
+    # Count the unique X/Y coordinates into columns/rows
+    for wheel in self.wheels:
+      rows.add(wheel['y'])
+      columns.add(wheel['x'])
+
+    # Create a dictionary of dicationaries to hold entries.
+    wheelTable = dict()
+    for row in rows:
+      wheelTable[row] = dict()
+      for column in columns:
+        wheelTable[row][column] = list()
+
+    # Put each wheel into its matching location in the table.
+    for wheel in self.wheels:
+      wheelTable[wheel['y']][wheel['x']].append(wheel)
+
+    return wheelTable
+
+  def roboclaw_table(self, rclaw):
+    """
+    Generate a dictionary of RoboClaw version strings for each wheel,
+    keyed to the 'name' field for the wheel.
+    """
+    rctable = dict()
+    for wheel in self.wheels:
+      try:
+        rollcontrol = wheel['rolling']
+        rcver = rclaw.version((rollcontrol['address'],rollcontrol['motor']))
+      except ValueError as ve:
+        rcver = "(No Response)"
+      rctable[wheel['name']] = rcver
+
+    return rctable
+
   def updateMotion(self, velocity, radius=infinity):
     """
     Given the desired velocity and turning radius, update the angle and
@@ -150,18 +192,20 @@ class chassis:
       for wheel in self.wheels:
         name = wheel['name']
 
-        # Dimensions of triangle representing the wheel. Wsed for calculations
+        # Dimensions of triangle representing the wheel. Used for calculations
         # in form of opposite, adjacent, and hypotenuse
         opp = wheel['y']
         adj = radius-wheel['x']
         hyp = math.sqrt(pow(opp,2) + pow(adj,2))
 
+        # Calculate wheel steering angle to execute the commanded motion.
         if adj == 0:
           self.angles[name] = 90
         else:
           self.angles[name] = math.degrees(math.atan(float(opp)/float(adj)))
 
+        # Calculate wheel rolling velocity to execute the commanded motion.
         if radius == 0:
-          self.velocity[name] = 0 # TODO: Velocity calculation for turn-in-place where radius is zero
+          self.velocity[name] = 0 # TODO: Velocity calculation for spin-in-place where radius is zero
         else:
           self.velocity[name] = velocity * hyp/abs(radius)
