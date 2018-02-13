@@ -24,7 +24,15 @@ SOFTWARE.
 from SGVHAK_Rover import app
 from flask import flash, render_template
 import roverchassis
+import roboclaw_wrapper
 
+# Each instance of this class represents one group of RoboClaw connected
+# together on the same packet serial network. Up to eight addressible
+# RoboClaws and two motors per controller = up to 16 motors.
+rclaw = roboclaw_wrapper.roboclaw_wrapper()
+
+# Rover chassis geometry, including methods to calculate wheel angle and
+# velocity based on chassis geometry.
 chassis = roverchassis.chassis()
 
 class main_menu:
