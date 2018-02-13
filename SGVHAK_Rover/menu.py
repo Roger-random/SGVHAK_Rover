@@ -56,11 +56,15 @@ class main_menu:
     if len(chassis.wheels)==0:
       chassis.testWheels()
     if not rclaw.connected():
-      rclaw.connect(dict([('port','/dev/ttyACM0')]))
+      rclaw.connect(dict([('port','TEST')]))
+
+    chassis.updateMotion(0)
 
     # Render table
     return render_template("chassis_config.html",
       wheelTable = chassis.wheelDisplayTable(),
+      velocity = chassis.velocity,
+      angles = chassis.angles,
       roboclaw_table = chassis.roboclaw_table(rclaw))
 
   @app.route('/chassis_test')

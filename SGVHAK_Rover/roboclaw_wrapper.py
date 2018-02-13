@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from roboclaw import Roboclaw
+from roboclaw_stub import Roboclaw_stub
 
 def apiget(resultTuple, errorMessage="RoboClaw API Getter"):
   """
@@ -117,16 +118,19 @@ class roboclaw_wrapper:
     Connect to RoboClaw using provided dictionary of connection parameters
     """
     portname = parameters['port']
-    baudrate = parameters.get('baudrate', 115200)
-    timeout = parameters.get('timeout', 0.01) # Note this is actually interchar timeout
-    retries = parameters.get('retries', 3)
-
-    newrc = Roboclaw(portname, baudrate, timeout, retries)
-
-    if newrc.Open():
-      self.roboclaw = newrc
+    if portname == 'TEST':
+      self.roboclaw = Roboclaw_stub()
     else:
-      raise ValueError("Could not connect to RoboClaw with provided parameters")
+      baudrate = parameters.get('baudrate', 115200)
+      timeout = parameters.get('timeout', 0.01) # Note this is actually interchar timeout
+      retries = parameters.get('retries', 3)
+
+      newrc = Roboclaw(portname, baudrate, timeout, retries)
+
+      if newrc.Open():
+        self.roboclaw = newrc
+      else:
+        raise ValueError("Could not connect to RoboClaw with provided parameters")
 
   def connected(self):
     """Returns True if we have connected Roboclaw API to a serial port"""
