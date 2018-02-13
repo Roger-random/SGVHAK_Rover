@@ -209,3 +209,31 @@ class chassis:
           self.velocity[name] = 0 # TODO: Velocity calculation for spin-in-place where radius is zero
         else:
           self.velocity[name] = velocity * hyp/abs(radius)
+
+  def radius_for(self, name, angle):
+    """
+    Given the name of a wheel and the steering angle of that wheel, calculate
+    calculate the radius of the resulting rover path. This is used when
+    dictating turns by wheel behavior instead of rover behavior.
+    """
+    target = None
+    for wheel in self.wheels:
+      if wheel['name'] == name:
+        target = wheel
+        break
+
+    if target == None:
+      raise ValueError("Could not find wheel {} to calculate radius for angle {}.".format(name, angle))
+
+    if abs(angle) < 1:
+      # Rounding off to straight ahead
+      return infinity
+
+    if abs(angle) > 90:
+      raise ValueError("Steering wheel > 90 degrees not supported.")
+
+    if abs(angle) > 89:
+      # Rounding off to right angle
+      return wheel['x']
+
+    return wheel['x'] + (wheel['y']/math.tan(math.radians(angle)))
