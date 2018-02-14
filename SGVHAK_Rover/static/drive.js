@@ -22,16 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// jQuery launching points
+// Resize the pad and redraw upon initial load, and whenever window size changes.
 $(document).ready(function() {
   resizePad();
-  drawPad();})
-$( window ).resize(function() {
+  drawPad();
+  padListeners();
+});
+$(window).resize(function() {
   resizePad();
-  drawPad();})
+  drawPad();
+});
 
-// Current status
+// Current status of control pad, initialized to default values.
 padSize = 300;
+knobX = padSize/2;
+knobY = padSize/2;
+knobtracking = false;
 
 // Size the control pad to fit the available window.
 var resizePad = function() {
@@ -47,6 +53,58 @@ var resizePad = function() {
     pad.width = square;
     pad.height = square;
     padSize = square;
+    knobX = padSize/2;
+    knobY = padSize/2;
+  }
+}
+
+// Add event listeners to control pad
+var padListeners = function() {
+  var pad = document.getElementById("controlPad");
+
+  // TODO: Figure out why the jQuery equivalents didn't work.
+  pad.addEventListener("mousedown", trackingOn)
+  pad.addEventListener("touchstart", trackingOn)
+  pad.addEventListener("mousemove", updateKnob)
+  //pad.addEventListener("touchmove", updateKnob)
+  pad.addEventListener("mouseup", trackingOff)
+  pad.addEventListener("touchend", trackingOff)
+
+  // Turn off touch events when target is the pad, otherwise it'll scroll the
+  // page instead of doing what we want.
+  document.body.addEventListener("touchstart", function(e) {
+    if (e.target == pad) {
+      e.preventDefault();
+    }
+  }, false);
+  document.body.addEventListener("touchmove", function(e) {
+    if (e.target == pad) {
+      e.preventDefault();
+    }
+  }, false);
+  document.body.addEventListener("touchend", function(e) {
+    if (e.target == pad) {
+      e.preventDefault();
+    }
+  }, false);
+}
+
+var trackingOn = function() {
+  knobtracking = true;
+  window.requestAnimationFrame(drawPad);
+}
+
+var trackingOff = function() {
+  knobtracking = false;
+  window.requestAnimationFrame(drawPad);
+}
+
+var updateKnob = function(e) {
+  if (knobtracking)
+  {
+    knobX = e.clientX;
+    knobY = e.clientY - padSize*.15/2;
+    window.requestAnimationFrame(drawPad);
   }
 }
 
@@ -56,8 +114,23 @@ var drawPad = function() {
   var ctx = pad.getContext("2d");
   var center = padSize/2;
   var radius = 0.85 * center;
+  var knobradius = 0.15 * center;
+
+  ctx.clearRect(0,0,padSize,padSize);
 
   ctx.beginPath();
+  ctx.fillStyle = "#00FF00";
   ctx.arc(center,center,radius,0,2*Math.PI);
-  ctx.stroke();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(knobX, knobY, knobradius, 0, 2*Math.PI);
+  if (knobtracking)
+  {
+    ctx.fillStyle = "#0000FF";
+  }
+  else
+  {
+    ctx.fillStyle = "#FF0000";
+  }
+  ctx.fill()
 }
