@@ -34,10 +34,12 @@ $(window).resize(function() {
 });
 
 // Current status of control pad, initialized to default values.
-padSize = 300;
-knobX = padSize/2;
-knobY = padSize/2;
-knobtracking = false;
+var padSize = 300;
+var knobX = padSize/2;
+var knobY = padSize/2;
+var knobRadius = padSize * .15/2 // knob diameter is 15% of pad size.
+var knobTracking = false;
+var knobTrackingTouchPoint = null;
 
 // Size the control pad to fit the available window.
 var resizePad = function() {
@@ -55,6 +57,7 @@ var resizePad = function() {
     padSize = square;
     knobX = padSize/2;
     knobY = padSize/2;
+    knobRadius = padSize * .15/2
   }
 }
 
@@ -62,16 +65,21 @@ var resizePad = function() {
 var padListeners = function() {
   var pad = document.getElementById("controlPad");
 
-  // TODO: Figure out why the jQuery equivalents didn't work.
-  pad.addEventListener("mousedown", trackingOn)
-  pad.addEventListener("touchstart", trackingOn)
-  pad.addEventListener("mousemove", updateKnob)
-  //pad.addEventListener("touchmove", updateKnob)
-  pad.addEventListener("mouseup", trackingOff)
-  pad.addEventListener("touchend", trackingOff)
+  // TODO: Gracefully handle interspersed mouse and touch events. 
 
-  // Turn off touch events when target is the pad, otherwise it'll scroll the
-  // page instead of doing what we want.
+  // For unknown reason, jQuery equivalent failed to fire, so do it here.
+  pad.addEventListener("mousedown", padMouseDown)
+  pad.addEventListener("mousemove", padMouseMove)
+  pad.addEventListener("mouseup", padMouseUp)
+
+  // No jQuery equivalents for touch events.
+  pad.addEventListener("touchstart", padTouchStart)
+  pad.addEventListener("touchmove", padTouchMove)
+  pad.addEventListener("touchcancel", padTouchEnd)
+  pad.addEventListener("touchend", padTouchEnd)
+
+  // Turn off touch events when user touches the pad, otherwise user movements
+  // for moving the control knob will scroll the page instead.
   document.body.addEventListener("touchstart", function(e) {
     if (e.target == pad) {
       e.preventDefault();
@@ -89,22 +97,118 @@ var padListeners = function() {
   }, false);
 }
 
-var trackingOn = function() {
-  knobtracking = true;
-  window.requestAnimationFrame(drawPad);
+// We're only hit-testing the rectangle that encloses the knob, since this
+// math is simpler and faster. Revisit if this shortcut causes UI issues.
+var onKnob = function(x,y) {
+  return (x > (knobX-knobRadius) &&
+          x < (knobX+knobRadius) &&
+          y > (knobY-knobRadius) &&
+          y < (knobY+knobRadius));
 }
 
-var trackingOff = function() {
-  knobtracking = false;
-  window.requestAnimationFrame(drawPad);
-}
-
-var updateKnob = function(e) {
-  if (knobtracking)
-  {
-    knobX = e.clientX;
-    knobY = e.clientY - padSize*.15/2;
+// When Mouse or Touch event occurs, their respective handlers will pull out
+// the x/y coordinates and pass into these common handlers.
+var pointerStart = function(x,y) {
+  if (onKnob(x,y)) {
+    knobX = x;
+    knobY = y;
+    knobTracking = true;
     window.requestAnimationFrame(drawPad);
+  }
+}
+
+var pointerMove = function(x,y) {
+  if (knobTracking) {
+    knobX = x;
+    knobY = y;
+    window.requestAnimationFrame(drawPad);
+  }
+}
+
+var pointerEnd = function() {
+  if (knobTracking) {
+    knobX = padSize/2;
+    knobY = padSize/2;
+    knobTracking = false;
+    window.requestAnimationFrame(drawPad);
+  }
+}
+
+// For mouse control, we only want to start the knob tracking if the user
+// deliberately started on the control knob. Clicking elsewhere on the pad
+// should be ignored.
+var padMouseDown = function(e) {
+  pointerStart(e.offsetX,e.offsetY);
+}
+
+var padMouseMove = function(e) {
+  pointerMove(e.offsetX,e.offsetY);
+}
+
+var padMouseUp = function(e) {
+  pointerEnd();
+}
+
+// TODO: Robust client X/Y transform for touch events.
+// While mouse events have offsetX/offsetY for coordinates in target space,
+// touch events don't seem to have the same thing. We need to transform the
+// clientX/clientY coordinates (which is relative to all HTML content) into
+// target space. A robust solution will account for zoom/scaling and rotation.
+// The code below only corrects for X/Y offset transform and is not robust 
+// against other transforms.
+
+// When a touch event starts and we're not currently tracking, we look through 
+// all the touch pointers to see if any of them are on the control knob. If
+// found, we track that pointer (and ignore all others) until it is lifted.
+var padTouchStart = function(e) {
+  if (knobTracking) {
+    // Already tracking a touch point, ignore newly started ones.
+    return;
+  }
+  var newTouches = e.changedTouches;
+
+  for (var i = 0; i < newTouches.length; i++) {
+    touch = newTouches[i];
+
+    // Correct for X/Y client offset
+    touchX = touch.clientX - touch.target.getBoundingClientRect().left;
+    touchY = touch.clientY - touch.target.getBoundingClientRect().top;
+
+    if (onKnob(touchX, touchY)) {
+      knobTrackingTouchPoint = touch.identifier;
+      pointerStart(touchX, touchY);
+    }
+  }
+}
+
+var padTouchMove = function(e) {
+  if (knobTracking) {
+    var newTouches = e.changedTouches;
+
+    for (var i = 0; i < newTouches.length; i++) {
+      touch = newTouches[i];
+      if (touch.identifier == knobTrackingTouchPoint) {
+        // Correct for X/Y client offset
+        touchX = touch.clientX - touch.target.getBoundingClientRect().left;
+        touchY = touch.clientY - touch.target.getBoundingClientRect().top;
+
+        pointerMove(touchX, touchY);
+      }
+    }
+  }
+}
+
+var padTouchEnd = function(e) {
+  if (knobTracking) {
+    var newTouches = e.changedTouches;
+
+    for (var i = 0; i < newTouches.length; i++) {
+      touch = newTouches[i];
+      if (touch.identifier == knobTrackingTouchPoint) {
+        pointerEnd();
+        knobTrackingTouchPoint = null;
+      }
+    }
   }
 }
 
@@ -114,7 +218,6 @@ var drawPad = function() {
   var ctx = pad.getContext("2d");
   var center = padSize/2;
   var radius = 0.85 * center;
-  var knobradius = 0.15 * center;
 
   ctx.clearRect(0,0,padSize,padSize);
 
@@ -123,8 +226,8 @@ var drawPad = function() {
   ctx.arc(center,center,radius,0,2*Math.PI);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(knobX, knobY, knobradius, 0, 2*Math.PI);
-  if (knobtracking)
+  ctx.arc(knobX, knobY, knobRadius, 0, 2*Math.PI);
+  if (knobTracking)
   {
     ctx.fillStyle = "#0000FF";
   }
