@@ -48,8 +48,7 @@ class main_menu:
 
   @app.route('/drive')
   def drive():
-    flash("Drive placeholder","success")
-    return render_template("index.html")
+    return render_template("drive.html")
 
   @app.route('/chassis_config')
   def chassis_config():
