@@ -116,8 +116,6 @@ class Knob {
         this.angle = arctan-90;
       }
     }
-
-    console.log(this.percent + " " + this.angle);
   }
 
   // Knob's current X coordinate
