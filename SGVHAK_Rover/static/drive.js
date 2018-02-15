@@ -146,19 +146,23 @@ class Knob {
     this.angle = calcAngle;
   }
 
-  // Knob's current X coordinate
-  get x() {
-    return this.knobX;
-  }
+  // Draws knob on the given context. Caller is expected to have transformed
+  //  the canvas so knob is centered on 0,0.
+  draw(ctx) {
+    ctx.save();
+    ctx.beginPath();
 
-  // Knob's current Y coordinate
-  get y() {
-    return this.knobY;
-  }
-
-  // Knob's current radius
-  get radius() {
-    return this.knobRadius;
+    ctx.arc(this.knobX, this.knobY, this.knobRadius , 0, 2*Math.PI);
+    if (this.knobTracking)
+    {
+      ctx.fillStyle = "#00FF00";
+    }
+    else
+    {
+      ctx.fillStyle = "#FF0000";
+    }
+    ctx.fill();
+    ctx.restore();
   }
 }
 
@@ -340,16 +344,9 @@ var drawPad = function() {
   ctx.fillStyle = "#0000FF";
   ctx.arc(centerX,centerY,padSize * 0.85/2,0,2*Math.PI);
   ctx.fill();
-  ctx.beginPath();
 
-  ctx.arc(knob.x + centerX, knob.y + centerY, knob.radius , 0, 2*Math.PI);
-  if (knob.isTracking)
-  {
-    ctx.fillStyle = "#00FF00";
-  }
-  else
-  {
-    ctx.fillStyle = "#FF0000";
-  }
-  ctx.fill()
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  knob.draw(ctx);
+  ctx.restore();
 }
