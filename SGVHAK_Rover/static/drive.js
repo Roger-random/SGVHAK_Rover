@@ -40,13 +40,24 @@ var padSize = 300;
 var centerX = padSize/2;
 var centerY = padSize/2;
 
+// Control parameters: min/max velocity and angle
+class ControlParameters {
+  constructor() {
+    // Retrieve control parameters embedded in page HTML
+    this.Vmin = parseInt(document.getElementById("velocity_min").value);
+    this.Vmax = parseInt(document.getElementById("velocity_max").value);
+    this.Amin = parseInt(document.getElementById("angle_min").value);
+    this.Amax = parseInt(document.getElementById("angle_max").value);
+  }
+}
+
 // Knob class encapsulates the functionality associated with the control knob
 class Knob {
-  constructor(knobRadius, maxRadius) {
+  constructor(knobRadius, maxRadius, controlParameters) {
     this.knobX = 0;
     this.knobY = 0;
-    this.percent = 0;
     this.angle = 0;
+    this.param = controlParameters;
     this.knobRadius = knobRadius;
     this.maxRadius = maxRadius;
     this.knobTracking = false;
@@ -84,38 +95,55 @@ class Knob {
 
   // Updates knob position to the given x,y coordinates
   moveTo(x,y) {
-    var radiusRatio = Math.hypot(x,y)/this.maxRadius;
-    if (radiusRatio > 1) {
-      // Constrain to within max radius.
-      this.knobX = x / radiusRatio;
-      this.knobY = y / radiusRatio;
-      this.percent = 100;
-    } else {
-      this.knobX = x;
-      this.knobY = y;
-      this.percent = 100 * radiusRatio;
+    var hypot = Math.hypot(x,y);
+    if (hypot/this.maxRadius > 1) {
+      // Constrain within maxRadius
+      hypot = this.maxRadius;
     }
 
+    // Calculate polar angle of the given cartesian point.
+    var calcAngle = 0;
     if (x == 0) {
       // Hard coded values to avoid divide-by-zero error calculating arc tangent.
       if (y >= 0) {
-        this.angle = 0;
+        calcAngle = 0;
       } else {
-        this.angle = 180;
+        calcAngle = 180;
       }
     } else {
-      var arctan = Math.atan(y/x) * 180 / Math.PI; 
+      var arctan = Math.atan(y/x); 
       arctan = arctan * 180 / Math.PI; // Math.atan returns radians, convert to degrees.
 
       // Convert so:
       //   Straight up is zero degrees and straight down is 180/-180
       //   Positive angle clockwise from straight up, negative counterclockwise.
       if (x > 0 ) {
-        this.angle = arctan+90;
+        calcAngle = arctan+90;
       } else {
-        this.angle = arctan-90;
+        calcAngle = arctan-90;
       }
     }
+
+    // Constrain polar angle within the given angle min/max, then calculate
+    // new X/Y from the constrained angle.
+    // TODO: Feels like this long if/elseif chain can be simplified.
+    if (calcAngle > this.param.Amax && calcAngle <= 90) {
+      // 1st Quadrant (+X/+Y)
+      calcAngle = this.param.Amax;
+    } else if (calcAngle < this.param.Amin && calcAngle > -90) {
+      // 2nd Quadrant (-X/+Y)
+      calcAngle = this.param.Amin;
+    } else if (calcAngle < -90 && calcAngle > this.param.Amax-180) {
+      // 3rd Quadrant (-X/-Y)
+      calcAngle = this.param.Amax-180;
+    } else if (calcAngle > 90 && calcAngle < 180+this.param.Amin) {
+      // 4th Quadrant (+X/-Y)
+      calcAngle = 180+this.param.Amin;
+    }
+    var calcAngleRadians = calcAngle * Math.PI / 180;
+    this.knobX = Math.sin(calcAngleRadians) * hypot;
+    this.knobY = Math.cos(calcAngleRadians) * -hypot;
+    this.angle = calcAngle;
   }
 
   // Knob's current X coordinate
@@ -134,7 +162,7 @@ class Knob {
   }
 }
 
-var knob = new Knob(padSize*.1, padSize*.425);
+var knob = null;
 
 // Size the control pad to fit the available window.
 var resizePad = function() {
@@ -153,7 +181,7 @@ var resizePad = function() {
     centerX = padSize/2;
     centerY = padSize/2;
 
-    knob = new Knob(padSize*.1, padSize*.425);
+    knob = new Knob(padSize*.1, padSize*.425, new ControlParameters());
   }
 }
 
