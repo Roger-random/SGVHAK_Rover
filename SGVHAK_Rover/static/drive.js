@@ -42,10 +42,13 @@ var centerY = padSize/2;
 
 // Knob class encapsulates the functionality associated with the control knob
 class Knob {
-  constructor(knobSize) {
+  constructor(knobRadius, maxRadius) {
     this.knobX = 0;
     this.knobY = 0;
-    this.knobRadius = knobSize/2; // Track radius becuase that's what we use to draw.
+    this.percent = 0;
+    this.angle = 0;
+    this.knobRadius = knobRadius;
+    this.maxRadius = maxRadius;
     this.knobTracking = false;
     this.knobTrackingTouchPoint = null;
   }
@@ -81,8 +84,40 @@ class Knob {
 
   // Updates knob position to the given x,y coordinates
   moveTo(x,y) {
-    this.knobX = x;
-    this.knobY = y;
+    var radiusRatio = Math.hypot(x,y)/this.maxRadius;
+    if (radiusRatio > 1) {
+      // Constrain to within max radius.
+      this.knobX = x / radiusRatio;
+      this.knobY = y / radiusRatio;
+      this.percent = 100;
+    } else {
+      this.knobX = x;
+      this.knobY = y;
+      this.percent = 100 * radiusRatio;
+    }
+
+    if (x == 0) {
+      // Hard coded values to avoid divide-by-zero error calculating arc tangent.
+      if (y >= 0) {
+        this.angle = 0;
+      } else {
+        this.angle = 180;
+      }
+    } else {
+      var arctan = Math.atan(y/x) * 180 / Math.PI; 
+      arctan = arctan * 180 / Math.PI; // Math.atan returns radians, convert to degrees.
+
+      // Convert so:
+      //   Straight up is zero degrees and straight down is 180/-180
+      //   Positive angle clockwise from straight up, negative counterclockwise.
+      if (x > 0 ) {
+        this.angle = arctan+90;
+      } else {
+        this.angle = arctan-90;
+      }
+    }
+
+    console.log(this.percent + " " + this.angle);
   }
 
   // Knob's current X coordinate
@@ -101,7 +136,7 @@ class Knob {
   }
 }
 
-var knob = new Knob(padSize);
+var knob = new Knob(padSize*.1, padSize*.425);
 
 // Size the control pad to fit the available window.
 var resizePad = function() {
@@ -120,7 +155,7 @@ var resizePad = function() {
     centerX = padSize/2;
     centerY = padSize/2;
 
-    knob = new Knob(padSize*.2); // Knob is 20% the size of the pad.
+    knob = new Knob(padSize*.1, padSize*.425);
   }
 }
 
