@@ -386,11 +386,15 @@ var sendDriveCommand = function() {
   var output = document.getElementById("command_status");
   var xhttp = new XMLHttpRequest();
   xhttp.open("POST", document.getElementById("command").value, true);
-  xhttp.onload = function(onEvent) {
-    if (onEvent.status == 200) {
-      output.innerHTML = "Command sent";
+  xhttp.onload = function(e) {
+    if (e.target.status == 200) {
+      if (knob.magnitude==0) {
+        output.innerHTML = "Sent Stop";
+      } else {
+        output.innerHTML = "Sent Move";
+      }
     } else {
-      output.innerHTML = "Error " + onEvent.status;
+      output.innerHTML = "Error " + e.target.response;
     }
   };
   xhttp.send(formData);
