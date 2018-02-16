@@ -383,18 +383,12 @@ var sendDriveCommand = function() {
   formData.set("angle", knob.angle);
   formData.set("magnitude", knob.magnitude);
 
-  var output = document.getElementById("command_status");
   var xhttp = new XMLHttpRequest();
   xhttp.open("POST", document.getElementById("command").value, true);
   xhttp.onload = function(e) {
-    if (e.target.status == 200) {
-      if (knob.magnitude==0) {
-        output.innerHTML = "Sent Stop";
-      } else {
-        output.innerHTML = "Sent Move";
-      }
-    } else {
-      output.innerHTML = "Error " + e.target.response;
+    if (e.target.status != 200) {
+      // Stop tracking in case of error
+      pointerEnd();
     }
   };
   xhttp.send(formData);

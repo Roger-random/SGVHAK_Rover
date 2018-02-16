@@ -21,17 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-# from __future__ import print_function
-# import sys
-
 from SGVHAK_Rover import app
 from flask import flash, json, render_template, request
 import roverchassis
 import roboclaw_wrapper
-
-# Printing to Flask console
-#def eprint(*args, **kwargs):
-#    print(*args, file=sys.stderr, **kwargs)
 
 # Each instance of this class represents one group of RoboClaw connected
 # together on the same packet serial network. Up to eight addressible
@@ -61,20 +54,17 @@ class main_menu:
 
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
-    try:
-      angle = float(request.form['angle'])
-      magnitude = float(request.form['magnitude'])
+    angle = float(request.form['angle'])
+    magnitude = float(request.form['magnitude'])
 
-      if angle >= 0:
-        radius = chassis.radius_for('front_right', angle)
-      else:
-        radius = chassis.radius_for('front_left', angle)
+    if angle >= 0:
+      radius = chassis.radius_for('front_right', angle)
+    else:
+      radius = chassis.radius_for('front_left', angle)
 
-      chassis.updateMotion(magnitude, radius)
+    chassis.updateMotion(magnitude, radius)
 
-      return json.jsonify({'Success':1})
-    except Exception as e:
-      return json.jsonify({'Failure':0})
+    return json.jsonify({'Success':1})
 
   @app.route('/chassis_config')
   def chassis_config():
