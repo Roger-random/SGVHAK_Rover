@@ -54,7 +54,7 @@ class main_menu:
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
     angle = float(request.form['angle'])*45/100
-    magnitude = float(request.form['magnitude'])*75
+    magnitude = float(request.form['magnitude'])
 
     if angle >= 0:
       radius = chassis.radius_for('front_right', angle)
@@ -62,7 +62,7 @@ class main_menu:
       radius = chassis.radius_for('front_left', angle)
 
     chassis.updateMotion(magnitude, radius)
-    chassis.normalizeVelocity(7500)
+    chassis.normalizeVelocity(100)
 
     return json.jsonify({'Success':1})
 
@@ -80,6 +80,18 @@ class main_menu:
       velocity = chassis.velocity,
       angles = chassis.angles,
       roboclaw_table = chassis.roboclaw_table(rclaw))
+
+  @app.route('/request_wheel_status', methods=['POST'])
+  def request_wheel_status():
+    wheelInfo = dict()
+    for wheel in chassis.wheels:
+      name = wheel['name']
+      velocity = chassis.velocity[name]
+      angle = chassis.angles[name]
+      wheelInfo[name] = dict()
+      wheelInfo[name]['velocity'] = velocity
+      wheelInfo[name]['angle'] = angle
+    return json.jsonify(wheelInfo)
 
   @app.route('/chassis_test')
   def chassis_test():

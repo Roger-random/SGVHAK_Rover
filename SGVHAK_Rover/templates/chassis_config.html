@@ -23,9 +23,8 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
-<script>
-  setTimeout(() => {location.reload(true);}, 500); // Reload page every half second
-</script>
+<script type="text/javascript" src="{{url_for('static', filename='chassis_config.js')}}"></script>
+<input type="hidden" id="request_wheel_status" value="{{url_for('request_wheel_status')}}" />
 <div class="container">
   <h4 class="center_header">Chassis Configuraton</h4>
   <table>
@@ -35,6 +34,9 @@ SOFTWARE.
       <td class="center-align">
         {% for wheel in wheelTableColumn %}
         <div class="container blue lighten-4">
+          <canvas id="canvas_{{wheel['name']}}" width="100" height="100">
+          </canvas>
+          <br/>
           <b>{{wheel['name']}}</b>
           <br/>
           ({{wheel['x']}},{{wheel['y']}})
@@ -55,8 +57,6 @@ SOFTWARE.
           {% else %}
             Steering: TBD
           {% endif %}
-          <br/>
-          Velocity {{ velocity[wheel['name']]|int }} @ {{ angles[wheel['name']]|int }}&deg
         </div>
         {% endfor %}
       </td>
