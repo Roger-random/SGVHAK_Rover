@@ -23,7 +23,7 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
-<script type="text/javascript" src="{{url_for('static', filename='drive.js', a=1151)}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='drive.js')}}"></script>
 <!-- default size chosen to be visible even on small phone screens -->
 <canvas id="controlPad" width="300" height="300">
   <input type="hidden" id="ui_angle" value="{{ui_angle}}" />

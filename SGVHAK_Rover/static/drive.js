@@ -157,8 +157,6 @@ class Knob {
       this.magnitude = -100 * hypot/this.maxRadius;
     }
     this.angle = 100 * calcAngle/this.uiAngle;
-
-    console.log("Mag=" + this.magnitude + " Angle=" + this.angle);
   }
 
   // Draws knob on the given context. Caller is expected to have transformed
