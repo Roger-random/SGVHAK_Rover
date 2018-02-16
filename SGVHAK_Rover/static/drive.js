@@ -44,8 +44,6 @@ var centerY = padSize/2;
 class ControlParameters {
   constructor() {
     // Retrieve control parameters embedded in page HTML
-    this.Vmin = parseInt(document.getElementById("velocity_min").value);
-    this.Vmax = parseInt(document.getElementById("velocity_max").value);
     this.Amin = parseInt(document.getElementById("angle_min").value);
     this.Amax = parseInt(document.getElementById("angle_max").value);
   }
@@ -57,6 +55,7 @@ class Knob {
     this.knobX = 0;
     this.knobY = 0;
     this.angle = 0;
+    this.magnitude = 0;
     this.param = controlParameters;
     this.knobRadius = knobRadius;
     this.maxRadius = maxRadius;
@@ -105,10 +104,10 @@ class Knob {
     var calcAngle = 0;
     if (x == 0) {
       // Hard coded values to avoid divide-by-zero error calculating arc tangent.
-      if (y >= 0) {
-        calcAngle = 0;
-      } else {
+      if (y > 0) {
         calcAngle = 180;
+      } else {
+        calcAngle = 0;
       }
     } else {
       var arctan = Math.atan(y/x); 
@@ -126,24 +125,47 @@ class Knob {
 
     // Constrain polar angle within the given angle min/max, then calculate
     // new X/Y from the constrained angle.
-    // TODO: Feels like this long if/elseif chain can be simplified.
-    if (calcAngle > this.param.Amax && calcAngle <= 90) {
-      // 1st Quadrant (+X/+Y)
-      calcAngle = this.param.Amax;
-    } else if (calcAngle < this.param.Amin && calcAngle > -90) {
-      // 2nd Quadrant (-X/+Y)
-      calcAngle = this.param.Amin;
-    } else if (calcAngle < -90 && calcAngle > this.param.Amax-180) {
-      // 3rd Quadrant (-X/-Y)
-      calcAngle = this.param.Amax-180;
-    } else if (calcAngle > 90 && calcAngle < 180+this.param.Amin) {
-      // 4th Quadrant (+X/-Y)
-      calcAngle = 180+this.param.Amin;
+    if (calcAngle == 0 ) {
+      this.knobX = 0;
+      this.knobY = -hypot;
+    } else if (calcAngle == 180 ) {
+      this.knobX = 0;
+      this.knobY = hypot;
+    } else {
+      // TODO: Feels like this long if/elseif chain can be simplified.
+      if (calcAngle > this.param.Amax && calcAngle <= 90) {
+        // 1st Quadrant (+X/+Y)
+        calcAngle = this.param.Amax;
+      } else if (calcAngle < this.param.Amin && calcAngle > -90) {
+        // 2nd Quadrant (-X/+Y)
+        calcAngle = this.param.Amin;
+      } else if (calcAngle < -90 && calcAngle > this.param.Amax-180) {
+        // 3rd Quadrant (-X/-Y)
+        calcAngle = this.param.Amax-180;
+      } else if (calcAngle > 90 && calcAngle < 180+this.param.Amin) {
+        // 4th Quadrant (+X/-Y)
+        calcAngle = 180+this.param.Amin;
+      }
+      var calcAngleRadians = calcAngle * Math.PI / 180;
+      this.knobX = Math.sin(calcAngleRadians) * hypot;
+      this.knobY = Math.cos(calcAngleRadians) * -hypot;
     }
-    var calcAngleRadians = calcAngle * Math.PI / 180;
-    this.knobX = Math.sin(calcAngleRadians) * hypot;
-    this.knobY = Math.cos(calcAngleRadians) * -hypot;
-    this.angle = calcAngle;
+
+    // Translate to wheel control values.
+    //  * Angle range from -90 (full left) to 90 (full right). Angle beyond
+    //    this range becomes the 180-degree inverse with negative magnitude.
+    //  * Magnitude range from 100 (full speed ahead) to -100 (full reverse)
+    if (calcAngle >= -90 && calcAngle <= 90) {
+      this.angle = calcAngle;
+      this.magnitude = 100 * hypot/this.maxRadius;
+    } else {
+      if (calcAngle > 90) {
+        this.angle = calcAngle-180;
+      } else {
+        this.angle = calcAngle+180;
+      }
+      this.magnitude = -100 * hypot/this.maxRadius;
+    }
   }
 
   // Draws knob on the given context. Caller is expected to have transformed

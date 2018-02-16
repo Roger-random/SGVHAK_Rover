@@ -49,8 +49,6 @@ class main_menu:
   @app.route('/drive')
   def drive():
     return render_template("drive.html",
-      velocity_min=600,
-      velocity_max=6000,
       angle_min=-45,
       angle_max=45)
 
