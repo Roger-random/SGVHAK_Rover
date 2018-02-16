@@ -152,17 +152,16 @@ class Knob {
     }
 
     // Translate to wheel control values.
-    //  * Angle range from -90 (full left) to 90 (full right). Angle beyond
-    //    this range becomes the 180-degree inverse with negative magnitude.
+    //  * Angle range from -90 (full left) to 90 (full right).
     //  * Magnitude range from 100 (full speed ahead) to -100 (full reverse)
     if (calcAngle >= -90 && calcAngle <= 90) {
       this.angle = calcAngle;
       this.magnitude = 100 * hypot/this.maxRadius;
     } else {
       if (calcAngle > 90) {
-        this.angle = calcAngle-180;
+        this.angle = 180-calcAngle;
       } else {
-        this.angle = calcAngle+180;
+        this.angle = -180-calcAngle;
       }
       this.magnitude = -100 * hypot/this.maxRadius;
     }

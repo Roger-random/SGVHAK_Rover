@@ -47,7 +47,7 @@ class chassis:
 
     # Radius representing the tightest turn this chassis can make. Minimum
     #   value of zero indicates chassis is capable of turning in place.
-    self.minRadius = 20 # TODO: calculate based on chassis configuration.
+    self.minRadius = 17.75 # TODO: calculate based on chassis configuration.
 
     # The current (velocity, radius) that dictated wheel angle and velocity.
     #   Velocity unit is up to the caller, math works regardless of units
