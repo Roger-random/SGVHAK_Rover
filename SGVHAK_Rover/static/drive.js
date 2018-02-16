@@ -254,6 +254,7 @@ var pointerStart = function(x,y) {
     knob.moveTo(x,y);
     knob.tracking(true);
     window.requestAnimationFrame(drawPad);
+    sendDriveCommand();
   }
 }
 
@@ -261,6 +262,7 @@ var pointerMove = function(x,y) {
   if (knob.isTracking) {
     knob.moveTo(x,y);
     window.requestAnimationFrame(drawPad);
+    sendDriveCommand();
   }
 }
 
@@ -269,6 +271,7 @@ var pointerEnd = function() {
     knob.moveTo(0,0);
     knob.tracking(false);
     window.requestAnimationFrame(drawPad);
+    sendDriveCommand();
   }
 }
 
@@ -371,4 +374,25 @@ var drawPad = function() {
   ctx.translate(centerX, centerY);
   knob.draw(ctx);
   ctx.restore();
+}
+
+var driveSuccess = 0;
+
+// Send control knob location to server
+var sendDriveCommand = function() {
+  var formData = new FormData();
+  formData.set("angle", knob.angle);
+  formData.set("magnitude", knob.magnitude);
+
+  var output = document.getElementById("command_status");
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("POST", document.getElementById("command").value, true);
+  xhttp.onload = function(onEvent) {
+    if (onEvent.status == 200) {
+      output.innerHTML = "Command sent";
+    } else {
+      output.innerHTML = "Error " + onEvent.status;
+    }
+  };
+  xhttp.send(formData);
 }

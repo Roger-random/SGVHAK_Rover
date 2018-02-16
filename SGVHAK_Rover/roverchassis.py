@@ -174,6 +174,10 @@ class chassis:
     Radius of zero indicates a turn-in-place movement. (Not yet implemented)
     Radius of infinity indicates movement in a straight line.
     """
+    if abs(radius) < self.minRadius:
+      # This chassis configuration could not make that tight of a turn.
+      raise ValueError("Radius below minimum")
+
     self.currentMotion = (velocity, radius)
     self.angles.clear()
     self.velocity.clear()
@@ -184,9 +188,6 @@ class chassis:
         name = wheel['name']
         self.angles[name] = 0
         self.velocity[name] = velocity
-    elif abs(radius) < self.minRadius:
-      # This chassis configuration could not make that tight of a turn.
-      raise ValueError("Radius below minimum")
     else:
       # Calculate angle and velocity for each wheel
       for wheel in self.wheels:

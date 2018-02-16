@@ -29,5 +29,6 @@ SOFTWARE.
 </canvas>
 <input type="hidden" id="angle_min" value="{{angle_min}}" />
 <input type="hidden" id="angle_max" value="{{angle_max}}" />
-
+<input type="hidden" id="command" value="{{url_for('drive_command')}}" />
+<span id="command_status">Waiting</span>
 {% endblock %}
