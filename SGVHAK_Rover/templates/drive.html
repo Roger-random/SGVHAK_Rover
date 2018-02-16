@@ -23,11 +23,10 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
-<script type="text/javascript" src="{{url_for('static', filename='drive.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='drive.js', a=1151)}}"></script>
 <!-- default size chosen to be visible even on small phone screens -->
 <canvas id="controlPad" width="300" height="300">
+  <input type="hidden" id="ui_angle" value="{{ui_angle}}" />
+  <input type="hidden" id="command" value="{{url_for('drive_command')}}" />
 </canvas>
-<input type="hidden" id="angle_min" value="{{angle_min}}" />
-<input type="hidden" id="angle_max" value="{{angle_max}}" />
-<input type="hidden" id="command" value="{{url_for('drive_command')}}" />
 {% endblock %}

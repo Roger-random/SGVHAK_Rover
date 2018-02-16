@@ -49,12 +49,11 @@ class main_menu:
   @app.route('/drive')
   def drive():
     return render_template("drive.html",
-      angle_min=-45,
-      angle_max=45)
+      ui_angle=70)
 
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
-    angle = float(request.form['angle'])
+    angle = float(request.form['angle'])*45/100
     magnitude = float(request.form['magnitude'])
 
     if angle >= 0:

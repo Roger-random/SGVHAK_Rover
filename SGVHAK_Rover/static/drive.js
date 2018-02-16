@@ -40,23 +40,14 @@ var padSize = 300;
 var centerX = padSize/2;
 var centerY = padSize/2;
 
-// Control parameters: min/max velocity and angle
-class ControlParameters {
-  constructor() {
-    // Retrieve control parameters embedded in page HTML
-    this.Amin = parseInt(document.getElementById("angle_min").value);
-    this.Amax = parseInt(document.getElementById("angle_max").value);
-  }
-}
-
 // Knob class encapsulates the functionality associated with the control knob
 class Knob {
-  constructor(knobRadius, maxRadius, controlParameters) {
+  constructor(knobRadius, maxRadius, uiAngle) {
     this.knobX = 0;
     this.knobY = 0;
     this.angle = 0;
     this.magnitude = 0;
-    this.param = controlParameters;
+    this.uiAngle = uiAngle;
     this.knobRadius = knobRadius;
     this.maxRadius = maxRadius;
     this.knobTracking = false;
@@ -133,18 +124,18 @@ class Knob {
       this.knobY = hypot;
     } else {
       // TODO: Feels like this long if/elseif chain can be simplified.
-      if (calcAngle > this.param.Amax && calcAngle <= 90) {
+      if (calcAngle > this.uiAngle && calcAngle <= 90) {
         // 1st Quadrant (+X/+Y)
-        calcAngle = this.param.Amax;
-      } else if (calcAngle < this.param.Amin && calcAngle > -90) {
+        calcAngle = this.uiAngle;
+      } else if (calcAngle < -this.uiAngle && calcAngle > -90) {
         // 2nd Quadrant (-X/+Y)
-        calcAngle = this.param.Amin;
-      } else if (calcAngle < -90 && calcAngle > this.param.Amax-180) {
+        calcAngle = -this.uiAngle;
+      } else if (calcAngle < -90 && calcAngle > this.uiAngle-180) {
         // 3rd Quadrant (-X/-Y)
-        calcAngle = this.param.Amax-180;
-      } else if (calcAngle > 90 && calcAngle < 180+this.param.Amin) {
+        calcAngle = this.uiAngle-180;
+      } else if (calcAngle > 90 && calcAngle < 180-this.uiAngle) {
         // 4th Quadrant (+X/-Y)
-        calcAngle = 180+this.param.Amin;
+        calcAngle = 180-this.uiAngle;
       }
       var calcAngleRadians = calcAngle * Math.PI / 180;
       this.knobX = Math.sin(calcAngleRadians) * hypot;
@@ -152,19 +143,22 @@ class Knob {
     }
 
     // Translate to wheel control values.
-    //  * Angle range from -90 (full left) to 90 (full right).
+    //  * Angle kept between (-uiAngle, uiAngle) is normalized to range from
+    //    -100 (full left @ uiAngle) to 100 (full right uiAngle).
     //  * Magnitude range from 100 (full speed ahead) to -100 (full reverse)
     if (calcAngle >= -90 && calcAngle <= 90) {
-      this.angle = calcAngle;
       this.magnitude = 100 * hypot/this.maxRadius;
     } else {
       if (calcAngle > 90) {
-        this.angle = 180-calcAngle;
+        calcAngle = 180-calcAngle;
       } else {
-        this.angle = -180-calcAngle;
+        calcAngle = -180-calcAngle;
       }
       this.magnitude = -100 * hypot/this.maxRadius;
     }
+    this.angle = 100 * calcAngle/this.uiAngle;
+
+    console.log("Mag=" + this.magnitude + " Angle=" + this.angle);
   }
 
   // Draws knob on the given context. Caller is expected to have transformed
@@ -206,7 +200,7 @@ var resizePad = function() {
     centerX = padSize/2;
     centerY = padSize/2;
 
-    knob = new Knob(padSize*.1, padSize*.425, new ControlParameters());
+    knob = new Knob(padSize*.1, padSize*.425, parseInt(document.getElementById("ui_angle").value));
   }
 }
 
