@@ -54,7 +54,7 @@ class main_menu:
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
     angle = float(request.form['angle'])*45/100
-    magnitude = float(request.form['magnitude'])
+    magnitude = float(request.form['magnitude'])*75
 
     if angle >= 0:
       radius = chassis.radius_for('front_right', angle)
@@ -62,6 +62,7 @@ class main_menu:
       radius = chassis.radius_for('front_left', angle)
 
     chassis.updateMotion(magnitude, radius)
+    chassis.normalizeVelocity(7500)
 
     return json.jsonify({'Success':1})
 
