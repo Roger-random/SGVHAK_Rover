@@ -43,13 +43,13 @@ class main_menu:
 
   @app.route('/stop_motors')
   def stop_motors():
-    flash("Stop Motor Placeholder","success")
+    chassis.updateMotion(0)
+    flash("Motors Stopped","success")
     return render_template("index.html")
 
   @app.route('/drive')
   def drive():
-    return render_template("drive.html",
-      ui_angle=70)
+    return render_template("drive.html", ui_angle=70)
 
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
@@ -62,7 +62,6 @@ class main_menu:
       radius = chassis.radius_for('front_left', angle)
 
     chassis.updateMotion(magnitude, radius)
-    chassis.normalizeVelocity(100)
 
     return json.jsonify({'Success':1})
 

@@ -211,23 +211,20 @@ class chassis:
         else:
           self.velocity[name] = velocity * hyp/abs(radius)
 
-  def normalizeVelocity(self, maxVelocity):
-    """
-    Given a maxVelocity, normalize al the wheel roll rate magnitude so they
-    stay below maxVelocity while maintaining relative ratios between their rates.
-    """
+    # Go back and normalize al the wheel roll rate magnitude so they are at or
+    # below target velocity while maintaining relative ratios between their rates.
     currentMax = 0
 
     for vel in self.velocity:
       if abs(self.velocity[vel]) > currentMax:
         currentMax = abs(self.velocity[vel])
 
-    if currentMax > maxVelocity:
+    if currentMax > velocity:
       # At least one wheel exceeded specified maxVelocity, calculate
       # normalization ratio and apply to every wheel.
-      reduceRatio = maxVelocity/float(currentMax)
+      reductionRatio = velocity/float(currentMax)
       for vel in self.velocity:
-        self.velocity[vel] = self.velocity[vel] * reduceRatio
+        self.velocity[vel] = self.velocity[vel] * reductionRatio
 
   def radius_for(self, name, angle):
     """
