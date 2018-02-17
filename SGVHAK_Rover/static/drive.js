@@ -266,6 +266,16 @@ var pointerEnd = function() {
   }
 }
 
+// Send control knob location to server
+var sendDriveCommand = function() {
+  $.ajax({
+    type: "POST",
+    url: document.getElementById("command").value,
+    data: {angle:knob.angle, magnitude:knob.magnitude},
+    error: pointerEnd
+  })
+}
+
 // For mouse control, we only want to start the knob tracking if the user
 // deliberately started on the control knob. Clicking elsewhere on the pad
 // should be ignored.
@@ -365,23 +375,4 @@ var drawPad = function() {
   ctx.translate(centerX, centerY);
   knob.draw(ctx);
   ctx.restore();
-}
-
-var driveSuccess = 0;
-
-// Send control knob location to server
-var sendDriveCommand = function() {
-  var formData = new FormData();
-  formData.set("angle", knob.angle);
-  formData.set("magnitude", knob.magnitude);
-
-  var xhttp = new XMLHttpRequest();
-  xhttp.open("POST", document.getElementById("command").value, true);
-  xhttp.onload = function(e) {
-    if (e.target.status != 200) {
-      // Stop tracking in case of error
-      pointerEnd();
-    }
-  };
-  xhttp.send(formData);
 }
