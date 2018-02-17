@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import math
+import roboclaw_wrapper
 
 # Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
 infinity = float("inf")
@@ -66,13 +67,25 @@ class chassis:
     #  Values = velocity of wheel in the same unit given in currentMotion.
     self.velocity = dict()
 
-  def testWheels(self):
+    # Each instance of this class represents one group of RoboClaw connected
+    # together on the same packet serial network. Up to eight addressible
+    # RoboClaws and two motors per controller = up to 16 motors. Since we
+    # have less than 16 motors to control at the moment, a single instance is
+    # sufficient.
+    self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
+
+  def testChassis(self):
     """
-    Use a set of hard-coded values for wheels. Will eventually be replaced
-    by a configuration file read from disk.
-    The order and the X,Y locations are taken from the reference chassis.
-      Dimensions are in inches.
+    Use a set of hard-coded values for chassis configuraton. In actual use,
+    these values will be read by a configuration file read from disk.
     """
+    
+    # Use a test stub RoboClaw instead of talking to a real RoboClaw.
+    if not self.rclaw.connected():
+      self.rclaw.connect(dict([('port','TEST')]))
+
+    # The order and the X,Y locations of wheels are taken from the reference 
+    # chassis, dimensions are in inches.
     self.wheels.append(dict([
       ('name','front_left'),
       ('x',-7.254),
@@ -148,7 +161,7 @@ class chassis:
 
     return wheelTable
 
-  def roboclaw_table(self, rclaw):
+  def roboclaw_table(self):
     """
     Generate a dictionary of RoboClaw version strings for each wheel,
     keyed to the 'name' field for the wheel.
@@ -157,7 +170,7 @@ class chassis:
     for wheel in self.wheels:
       try:
         rollcontrol = wheel['rolling']
-        rcver = rclaw.version((rollcontrol['address'],rollcontrol['motor']))
+        rcver = self.rclaw.version((rollcontrol['address'],rollcontrol['motor']))
       except ValueError as ve:
         rcver = "(No Response)"
       rctable[wheel['name']] = rcver
