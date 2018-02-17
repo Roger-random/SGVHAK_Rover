@@ -79,7 +79,7 @@ class chassis:
     Use a set of hard-coded values for chassis configuraton. In actual use,
     these values will be read by a configuration file read from disk.
     """
-    
+
     # Use a test stub RoboClaw instead of talking to a real RoboClaw.
     if not self.rclaw.connected():
       self.rclaw.connect(dict([('port','TEST')]))
@@ -93,7 +93,11 @@ class chassis:
       ('rolling', dict([('address',128),
                         ('motor',1),
                         ('inverted',True)])),
-      ('steering', None)]))
+      ('steering', dict([('address',131),
+                         ('motor',1),
+                         ('inverted',False),
+                         ('maxAngle', 45),
+                         ('maxCount', 1362)]))]))
     self.wheels.append(dict([
       ('name','mid_left'),
       ('x',-10.073),
@@ -109,7 +113,11 @@ class chassis:
       ('rolling', dict([('address',129),
                         ('motor',1),
                         ('inverted',True)])),
-      ('steering', None)]))
+      ('steering', dict([('address',131),
+                         ('motor',2),
+                         ('inverted',False),
+                         ('maxAngle', 45),
+                         ('maxCount', 1362)]))]))
     self.wheels.append(dict([
       ('name','front_right'),
       ('x',7.254),
@@ -117,7 +125,11 @@ class chassis:
       ('rolling', dict([('address',129),
                         ('motor',2),
                         ('inverted',False)])),
-      ('steering', None)]))
+      ('steering', dict([('address',132),
+                         ('motor',1),
+                         ('inverted',False),
+                         ('maxAngle', 45),
+                         ('maxCount', 1362)]))]))
     self.wheels.append(dict([
       ('name','mid_right'),
       ('x',10.073),
@@ -133,7 +145,11 @@ class chassis:
       ('rolling', dict([('address',130),
                         ('motor',2),
                         ('inverted',False)])),
-      ('steering', None)]))
+      ('steering', dict([('address',132),
+                         ('motor',2),
+                         ('inverted',False),
+                         ('maxAngle', 45),
+                         ('maxCount', 1362)]))]))
 
   def wheelDisplayTable(self):
     """

@@ -55,7 +55,12 @@ SOFTWARE.
           {% if wheel['steering'] == None %}
             Steering: Fixed
           {% else %}
-            Steering: TBD
+            Steering: M{{wheel['steering']['motor']}}@{{wheel['steering']['address']}}
+            {% if wheel['steering']['inverted'] == True %}
+              (Inverted)
+            {% endif %}
+            <br/>
+            {{wheel['steering']['maxAngle']}}&deg w/{{wheel['steering']['maxCount']}}
           {% endif %}
         </div>
         {% endfor %}
