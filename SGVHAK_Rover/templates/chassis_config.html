@@ -49,7 +49,7 @@ SOFTWARE.
               (Inverted)
             {% endif %}
             <br/>
-            {{roboclaw_table[wheel['name']]}}
+            {{roboclaw_table[wheel['name']][0]}}
           {% endif %}
           <br/>
           {% if wheel['steering'] == None %}
@@ -61,6 +61,8 @@ SOFTWARE.
             {% endif %}
             <br/>
             {{wheel['steering']['maxAngle']}}&deg w/{{wheel['steering']['maxCount']}}
+            <br/>
+            {{roboclaw_table[wheel['name']][1]}}
           {% endif %}
         </div>
         {% endfor %}

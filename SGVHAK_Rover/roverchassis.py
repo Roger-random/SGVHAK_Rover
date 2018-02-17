@@ -186,10 +186,20 @@ class chassis:
     for wheel in self.wheels:
       try:
         rollcontrol = wheel['rolling']
-        rcver = self.rclaw.version((rollcontrol['address'],rollcontrol['motor']))
+        rollclaw = self.rclaw.version((rollcontrol['address'],rollcontrol['motor']))
       except ValueError as ve:
-        rcver = "(No Response)"
-      rctable[wheel['name']] = rcver
+        rollclaw = "(No Response)"
+
+      steercontrol = wheel.get('steering', None)
+      if steercontrol:
+        try:
+          steerclaw = self.rclaw.version((steercontrol['address'],steercontrol['motor']))
+        except ValueError as ve:
+          steerclaw = "(No Response)"
+      else:
+        steerclaw = "N/A"
+
+      rctable[wheel['name']] = (rollclaw, steerclaw)
 
     return rctable
 
