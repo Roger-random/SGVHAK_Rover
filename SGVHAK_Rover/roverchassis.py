@@ -222,7 +222,7 @@ class chassis:
     if currentMax > velocity:
       # At least one wheel exceeded specified maxVelocity, calculate
       # normalization ratio and apply to every wheel.
-      reductionRatio = velocity/float(currentMax)
+      reductionRatio = abs(velocity)/float(currentMax)
       for vel in self.velocity:
         self.velocity[vel] = self.velocity[vel] * reductionRatio
 
