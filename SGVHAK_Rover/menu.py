@@ -76,7 +76,6 @@ class main_menu:
       velocity = chassis.velocity,
       angles = chassis.angles,
       roboclaw_table = chassis.roboclaw_table(),
-      rolling = chassis.rolling,
       steering = chassis.steering)
 
   @app.route('/request_wheel_status', methods=['POST'])

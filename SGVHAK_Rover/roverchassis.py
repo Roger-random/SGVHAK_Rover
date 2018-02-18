@@ -74,9 +74,6 @@ class chassis:
     # sufficient.
     self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
 
-    # Rolling motor parameters
-    self.rolling = dict()
-
     # Steering motor parameters
     self.steering = dict()
 
@@ -90,37 +87,13 @@ class chassis:
     if not self.rclaw.connected():
       self.rclaw.connect(dict([('port','TEST')]))
 
-    # Values taken from current SGVHAK prototype
-    self.rolling = dict([
-      ('maxVelocity',6000),
-      ('minVelocity',300),
-      ('accel', 7500),
-      ('velocity', dict([('p', 2500),
-                         ('i', 100),
-                         ('d', 500),
-                         ('qpps',10000)]))])
-
     # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
     #   10896 count per output shaft revolution. Hard stops @ 45 degrees,
     #   configure steering math with limit of 43 degrees (1301 counts) and
     #   RoboClaw to stop at 45 degrees (+/-1362 counts)
     self.steering = dict([
       ('maxAngle', 43),
-      ('maxCount', 1301),
-      ('speed', 5000),
-      ('accel', 7500),
-      ('decel', 7500),
-      ('velocity', dict([('p', 2500),
-                         ('i', 100),
-                         ('d', 500),
-                         ('qpps',10000)])),
-      ('position', dict([('p', 2400),
-                         ('i', 0),
-                         ('d', 500),
-                         ('maxi', 0),
-                         ('deadzone', 1),
-                         ('minpos', -1362),
-                         ('maxpos', 1362)]))])
+      ('maxCount', 1301)])
 
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
@@ -298,12 +271,6 @@ class chassis:
       for vel in self.velocity:
         self.velocity[vel] = self.velocity[vel] * reductionRatio
 
-    # If the specified velocity is below minimum, perform all the calculations
-    # above but skip sending the actual motor commands below.
-    # if abs(velocity) < float(self.rolling['minVelocity'])/self.rolling['maxVelocity']:
-      # Below minimum velocity - no action.
-      # return
-
     # We're sending commands for a particular wheel - steering and rolling
     # velocity - before we move on to the next wheel. If this causes timing
     # issues (wheels start moving before they've finished pointing in the
@@ -326,26 +293,18 @@ class chassis:
         if wheel['steering']['inverted']:
           targetposition = -targetposition
 
-        self.rclaw.position_accel_speed_decel(
-          (wheel['steering']['address'],wheel['steering']['motor']),
-          targetposition,
-          self.steering['accel'],
-          self.steering['speed'],
-          self.steering['decel'],
-          1) # 1 means immediate execution, not buffered.
+        self.rclaw.position(
+          (wheel['steering']['address'], wheel['steering']['motor']), targetposition)
 
       rolling = wheel['rolling']
       if rolling:
         velocity = self.velocity[name]
-        qpps = self.rolling['maxVelocity'] * velocity / 100
 
         if wheel['rolling']['inverted']:
-          qpps = -qpps
+          velocity = -velocity
 
-        self.rclaw.velocity_accel(
-          (wheel['rolling']['address'], wheel['rolling']['motor']),
-          qpps,
-          self.rolling['accel'])
+        self.rclaw.velocity(
+          (wheel['rolling']['address'], wheel['rolling']['motor']), velocity)
 
   def radius_for(self, name, pct_angle):
     """
