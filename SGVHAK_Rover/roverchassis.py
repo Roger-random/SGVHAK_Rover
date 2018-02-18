@@ -74,9 +74,6 @@ class chassis:
     # sufficient.
     self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
 
-    # Steering motor parameters
-    self.steering = dict()
-
   def testChassis(self):
     """
     Use a set of hard-coded values for chassis configuraton. In actual use,
@@ -86,14 +83,6 @@ class chassis:
     # Use a test stub RoboClaw instead of talking to a real RoboClaw.
     if not self.rclaw.connected():
       self.rclaw.connect(dict([('port','TEST')]))
-
-    # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
-    #   10896 count per output shaft revolution. Hard stops @ 45 degrees,
-    #   configure steering math with limit of 43 degrees (1301 counts) and
-    #   RoboClaw to stop at 45 degrees (+/-1362 counts)
-    self.steering = dict([
-      ('maxAngle', 43),
-      ('maxCount', 1301)])
 
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
@@ -283,18 +272,17 @@ class chassis:
       steering = wheel['steering']
       if steering:
         angle = self.angles[name]
-        if math.floor(abs(angle)) > math.ceil(self.steering['maxAngle']):
+        if math.floor(abs(angle)) > math.ceil(self.rclaw.maxangle()):
           # If we trigger this error, it means there's a problem with
           # minRadius calculation somewhere upstream because we should have
           # prevented with the minRadius check.
-          raise ValueError("Steering angle {} exceeds maxAngle {}, check minRadius calculation.".format(angle, self.steering['maxAngle']))
-        targetposition = self.steering['maxCount'] * angle / self.steering['maxAngle']
+          raise ValueError("Steering angle {} exceeds maxAngle {}, check minRadius calculation.".format(angle, self.rclaw.maxangle()))
 
         if wheel['steering']['inverted']:
-          targetposition = -targetposition
+          angle = -angle
 
-        self.rclaw.position(
-          (wheel['steering']['address'], wheel['steering']['motor']), targetposition)
+        self.rclaw.angle(
+          (wheel['steering']['address'], wheel['steering']['motor']), angle)
 
       rolling = wheel['rolling']
       if rolling:
@@ -326,7 +314,7 @@ class chassis:
     if abs(pct_angle) > 100:
       raise ValueError("Steering wheel angle percentage {} exceeds 100".format(pct_angle))
 
-    angle = pct_angle * float(self.steering['maxAngle']) / 100
+    angle = pct_angle * float(self.rclaw.maxangle()) / 100
 
     if abs(angle) < 1:
       # Rounding off to straight ahead

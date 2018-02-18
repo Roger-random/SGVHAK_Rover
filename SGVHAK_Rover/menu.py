@@ -75,8 +75,7 @@ class main_menu:
       wheelTable = chassis.wheelDisplayTable(),
       velocity = chassis.velocity,
       angles = chassis.angles,
-      roboclaw_table = chassis.roboclaw_table(),
-      steering = chassis.steering)
+      roboclaw_table = chassis.roboclaw_table())
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():

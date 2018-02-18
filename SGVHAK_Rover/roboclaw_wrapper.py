@@ -91,6 +91,12 @@ class roboclaw_wrapper:
       ('accel', 7500),
       ('decel', 7500)])
 
+    # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
+    #   10896 count per output shaft revolution. Hard stops @ 45 degrees
+    #   10896 / 8 = 1362
+    self.hardstopangle = 45
+    self.hardstopcount = 1362
+
     self.config = dict([
       ('velocity', dict([('p', 2500),
                          ('i', 100),
@@ -101,8 +107,8 @@ class roboclaw_wrapper:
                          ('d', 500),
                          ('maxi', 0),
                          ('deadzone', 1),
-                         ('minpos', -1362),    # -45 degrees
-                         ('maxpos', 1362)]))]) #  45 degrees
+                         ('minpos', -self.hardstopcount),    # -45 degrees
+                         ('maxpos', self.hardstopcount)]))]) #  45 degrees
 
   @staticmethod
   def check_id(id):
@@ -183,6 +189,9 @@ class roboclaw_wrapper:
     address, motor = self.check_id(id)
     self.check_roboclaw()
 
+    if abs(pct_velocity) > 100.1:
+      raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
+
     qpps = self.rollingParams['maxVelocity'] * pct_velocity / 100
     acceleration = self.rollingParams['acceleration']
 
@@ -195,13 +204,26 @@ class roboclaw_wrapper:
         address, acceleration, qpps),
         "Velocity {} acceleration {} on RoboClaw M2@{}".format(qpps, acceleration, address))
 
-  def position(self, id, position):
+  def maxangle(self):
+    """
+    Returns the maximum angle callers should use for their calculation.
+    Take the absolute end stop and subtract a little bit of margin.
+    """
+    return self.hardstopangle-1.5
+
+  def angle(self, id, angle):
     """
     Immediately moves the specified motor (address,motor#) to the specified
-    encoder count position.
+    angle expressed in number of degrees off zero center, positive clockwise.
     """
     address, motor = self.check_id(id)
     self.check_roboclaw()
+
+    if abs(angle) > self.hardstopangle:
+      raise ValueError("Steering angle {} exceeds maximum of {} degrees off center".format(angle, self.hardstopangle))
+
+    # Translate angle to position
+    position = self.hardstopcount * angle / self.hardstopangle
 
     acceleration = self.positionParams['accel']
     speed = self.positionParams['speed']
