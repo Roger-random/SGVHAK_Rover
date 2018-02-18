@@ -74,6 +74,12 @@ class chassis:
     # sufficient.
     self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
 
+    # Rolling motor parameters
+    self.rolling = dict()
+
+    # Steering motor parameters
+    self.steering = dict()
+
   def testChassis(self):
     """
     Use a set of hard-coded values for chassis configuraton. In actual use,
@@ -84,6 +90,15 @@ class chassis:
     if not self.rclaw.connected():
       self.rclaw.connect(dict([('port','TEST')]))
 
+    # Values taken from current SGVHAK prototype
+    self.rolling['maxVelocity'] = 6000
+
+    # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
+    #   10896 count per output shaft revolution. Hard stops @ 45 degrees,
+    #   configure software not to push beyond 43 degrees (1301 counts)
+    self.steering['maxAngle'] = 43
+    self.steering['maxCount'] = 1301
+
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
     self.wheels.append(dict([
@@ -92,19 +107,17 @@ class chassis:
       ('y',10.5),
       ('rolling', dict([('address',128),
                         ('motor',2),
-                        ('inverted',True)])),
+                        ('inverted',False)])),
       ('steering', dict([('address',131),
                          ('motor',2),
-                         ('inverted',False),
-                         ('maxAngle', 45),
-                         ('maxCount', 1362)]))]))
+                         ('inverted',False)]))]))
     self.wheels.append(dict([
       ('name','mid_left'),
       ('x',-10.073),
       ('y',0),
       ('rolling', dict([('address',129),
                         ('motor',2),
-                        ('inverted',True)])),
+                        ('inverted',False)])),
       ('steering', None)]))
     self.wheels.append(dict([
       ('name','rear_left'),
@@ -112,12 +125,10 @@ class chassis:
       ('y',-10.5),
       ('rolling', dict([('address',130),
                         ('motor',2),
-                        ('inverted',True)])),
+                        ('inverted',False)])),
       ('steering', dict([('address',132),
                          ('motor',2),
-                         ('inverted',False),
-                         ('maxAngle', 45),
-                         ('maxCount', 1362)]))]))
+                         ('inverted',False)]))]))
     self.wheels.append(dict([
       ('name','front_right'),
       ('x',7.254),
@@ -127,9 +138,7 @@ class chassis:
                         ('inverted',False)])),
       ('steering', dict([('address',131),
                          ('motor',1),
-                         ('inverted',False),
-                         ('maxAngle', 45),
-                         ('maxCount', 1362)]))]))
+                         ('inverted',False)]))]))
     self.wheels.append(dict([
       ('name','mid_right'),
       ('x',10.073),
@@ -147,9 +156,7 @@ class chassis:
                         ('inverted',False)])),
       ('steering', dict([('address',132),
                          ('motor',1),
-                         ('inverted',False),
-                         ('maxAngle', 45),
-                         ('maxCount', 1362)]))]))
+                         ('inverted',False)]))]))
 
   def wheelDisplayTable(self):
     """
@@ -265,7 +272,7 @@ class chassis:
       for vel in self.velocity:
         self.velocity[vel] = self.velocity[vel] * reductionRatio
 
-    
+    # 
 
   def radius_for(self, name, angle):
     """

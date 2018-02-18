@@ -42,9 +42,9 @@ SOFTWARE.
           ({{wheel['x']}},{{wheel['y']}})
           <br/>
           {% if wheel['rolling'] == None %}
-            Freewheel
+            <b>Freewheel</b>
           {% else %}
-            Rolling: M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
+            <b>Rolling:</b> M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
             {% if wheel['rolling']['inverted'] == True %}
               (Inverted)
             {% endif %}
@@ -52,15 +52,14 @@ SOFTWARE.
             {{roboclaw_table[wheel['name']][0]}}
           {% endif %}
           <br/>
+          <b>Steering:</b>
           {% if wheel['steering'] == None %}
-            Steering: Fixed
+            Fixed
           {% else %}
-            Steering: M{{wheel['steering']['motor']}}@{{wheel['steering']['address']}}
+            M{{wheel['steering']['motor']}}@{{wheel['steering']['address']}}
             {% if wheel['steering']['inverted'] == True %}
               (Inverted)
             {% endif %}
-            <br/>
-            {{wheel['steering']['maxAngle']}}&deg w/{{wheel['steering']['maxCount']}}
             <br/>
             {{roboclaw_table[wheel['name']][1]}}
           {% endif %}
@@ -71,5 +70,15 @@ SOFTWARE.
     </tr>
   {% endfor %}
   </table>
+  <div class="row">
+    <div class="col s12 center-align blue lighten-4">
+      Max Velocity = {{rolling['maxVelocity']}} QPPS
+    </div>
+  </div>
+  <div class="row">
+    <div class="col s12 center-align blue lighten-4">
+      Max Steering = {{steering['maxAngle']}}&deg at {{steering['maxCount']}} counts off center
+    </div>
+  </div>
 </div>
 {% endblock %}

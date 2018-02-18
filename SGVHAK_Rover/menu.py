@@ -47,7 +47,12 @@ class main_menu:
 
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
-    angle = float(request.form['angle'])*45/100
+    # TODO: Limit the frequency of updates to one every 100(?) ms. If more
+    # than one update arrive within the window, use the final one. This
+    # reduces workload on RoboClaw serial network and the mechanical bits
+    # can't respond super fast anyway.
+    # EXCEPTION: If a stop command arrives, stop immediately.
+    angle = float(request.form['angle'])*chassis.steering['maxAngle']/100
     magnitude = float(request.form['magnitude'])
 
     if angle >= 0:
@@ -70,7 +75,9 @@ class main_menu:
       wheelTable = chassis.wheelDisplayTable(),
       velocity = chassis.velocity,
       angles = chassis.angles,
-      roboclaw_table = chassis.roboclaw_table())
+      roboclaw_table = chassis.roboclaw_table(),
+      rolling = chassis.rolling,
+      steering = chassis.steering)
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():
