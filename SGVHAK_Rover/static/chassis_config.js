@@ -54,7 +54,7 @@ var updateWheels = function(data, textStatus, jqXHR) {
 var updateWheelCanvas = function(name, angle, velocity) {
   var canvas = document.getElementById("canvas_"+name);
   var ctx = canvas.getContext("2d");
-  var wheelW = canvas.width*0.2;
+  var wheelW = canvas.width*0.4;
   var wheelH = canvas.height*0.8;
 
   ctx.clearRect(0,0,canvas.width,canvas.height);

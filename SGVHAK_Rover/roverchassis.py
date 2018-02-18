@@ -91,10 +91,10 @@ class chassis:
       ('x',-7.254),
       ('y',10.5),
       ('rolling', dict([('address',128),
-                        ('motor',1),
+                        ('motor',2),
                         ('inverted',True)])),
       ('steering', dict([('address',131),
-                         ('motor',1),
+                         ('motor',2),
                          ('inverted',False),
                          ('maxAngle', 45),
                          ('maxCount', 1362)]))]))
@@ -102,7 +102,7 @@ class chassis:
       ('name','mid_left'),
       ('x',-10.073),
       ('y',0),
-      ('rolling', dict([('address',128),
+      ('rolling', dict([('address',129),
                         ('motor',2),
                         ('inverted',True)])),
       ('steering', None)]))
@@ -110,10 +110,10 @@ class chassis:
       ('name','rear_left'),
       ('x',-7.254),
       ('y',-10.5),
-      ('rolling', dict([('address',129),
-                        ('motor',1),
+      ('rolling', dict([('address',130),
+                        ('motor',2),
                         ('inverted',True)])),
-      ('steering', dict([('address',131),
+      ('steering', dict([('address',132),
                          ('motor',2),
                          ('inverted',False),
                          ('maxAngle', 45),
@@ -122,10 +122,10 @@ class chassis:
       ('name','front_right'),
       ('x',7.254),
       ('y',10.5),
-      ('rolling', dict([('address',129),
-                        ('motor',2),
+      ('rolling', dict([('address',128),
+                        ('motor',1),
                         ('inverted',False)])),
-      ('steering', dict([('address',132),
+      ('steering', dict([('address',131),
                          ('motor',1),
                          ('inverted',False),
                          ('maxAngle', 45),
@@ -134,7 +134,7 @@ class chassis:
       ('name','mid_right'),
       ('x',10.073),
       ('y',0),
-      ('rolling', dict([('address',130),
+      ('rolling', dict([('address',129),
                         ('motor',1),
                         ('inverted',False)])),
       ('steering', None)]))
@@ -143,10 +143,10 @@ class chassis:
       ('x',7.254),
       ('y',-10.5),
       ('rolling', dict([('address',130),
-                        ('motor',2),
+                        ('motor',1),
                         ('inverted',False)])),
       ('steering', dict([('address',132),
-                         ('motor',2),
+                         ('motor',1),
                          ('inverted',False),
                          ('maxAngle', 45),
                          ('maxCount', 1362)]))]))
@@ -252,18 +252,20 @@ class chassis:
 
     # Go back and normalize al the wheel roll rate magnitude so they are at or
     # below target velocity while maintaining relative ratios between their rates.
-    currentMax = 0
+    maxCalculated = 0
 
     for vel in self.velocity:
-      if abs(self.velocity[vel]) > currentMax:
-        currentMax = abs(self.velocity[vel])
+      if abs(self.velocity[vel]) > maxCalculated:
+        maxCalculated = abs(self.velocity[vel])
 
-    if currentMax > velocity:
+    if maxCalculated > velocity:
       # At least one wheel exceeded specified maxVelocity, calculate
       # normalization ratio and apply to every wheel.
-      reductionRatio = abs(velocity)/float(currentMax)
+      reductionRatio = abs(velocity)/float(maxCalculated)
       for vel in self.velocity:
         self.velocity[vel] = self.velocity[vel] * reductionRatio
+
+    
 
   def radius_for(self, name, angle):
     """
