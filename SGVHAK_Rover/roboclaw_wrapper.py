@@ -121,7 +121,7 @@ class roboclaw_wrapper:
     if portname == 'TEST':
       self.roboclaw = Roboclaw_stub()
     else:
-      baudrate = parameters.get('baudrate', 115200)
+      baudrate = parameters.get('baudrate', 38400)
       timeout = parameters.get('timeout', 0.01) # Note this is actually interchar timeout
       retries = parameters.get('retries', 3)
 
