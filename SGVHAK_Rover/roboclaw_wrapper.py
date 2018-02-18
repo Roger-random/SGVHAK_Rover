@@ -143,15 +143,37 @@ class roboclaw_wrapper:
 
     return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
 
-  def velocity(self, velocity, id):
+  def velocity_accel(self, id, velocity, acceleration):
     """
-    Run the specified motor (address,motor#) at the specified velocity.
-    (quadrature pulses per second)
+    Run the specified motor (address,motor#) at the specified velocity via
+    specified acceleration. Units are quadrature pulses per second (per second)
     """
     address, motor = self.check_id(id)
     self.check_roboclaw()
 
     if motor==1:
-      apiset(self.roboclaw.SpeedM1(address, velocity), "Velocity {} on RoboClaw M1@{}".format(velocity, address))
+      apiset(self.roboclaw.SpeedAccelM1(
+        address, acceleration, velocity),
+        "Velocity {} acceleration {} on RoboClaw M1@{}".format(velocity, acceleration, address))
     else:
-      apiset(self.roboclaw.SpeedM2(address, velocity), "Velocity {} on RoboClaw M2@{}".format(velocity, address))
+      apiset(self.roboclaw.SpeedAccelM2(
+        address, acceleration, velocity),
+        "Velocity {} acceleration {} on RoboClaw M2@{}".format(velocity, acceleration, address))
+
+  def position_accel_speed_decel(self, id, position, acceleration, speed, deceleration, buffer):
+    """
+    Moves the specified motor (address,motor#) to the specified position
+    while traversing at the specified acceleration, speed, and decelration.
+    Units are quadrature pulses per second (per second)
+    """
+    address, motor = self.check_id(id)
+    self.check_roboclaw()
+
+    if motor==1:
+      apiset(self.roboclaw.SpeedAccelDeccelPositionM1(
+        address, acceleration, speed, deceleration, position, buffer),
+        "Position {} via {}/{}/{} on RoboClaw M1@{}".format(position, acceleration, speed, deceleration, address))
+    else:
+      apiset(self.roboclaw.SpeedAccelDeccelPositionM2(
+        address, acceleration, speed, deceleration, position, buffer),
+        "Position {} via {}/{}/{} on RoboClaw M2@{}".format(position, acceleration, speed, deceleration, address))

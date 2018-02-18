@@ -92,12 +92,17 @@ class chassis:
 
     # Values taken from current SGVHAK prototype
     self.rolling['maxVelocity'] = 6000
+    self.rolling['minVelocity'] = 300
+    self.rolling['accel'] = 7500
 
     # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
     #   10896 count per output shaft revolution. Hard stops @ 45 degrees,
     #   configure software not to push beyond 43 degrees (1301 counts)
     self.steering['maxAngle'] = 43
     self.steering['maxCount'] = 1301
+    self.steering['speed'] = 5000
+    self.steering['accel'] = 7500
+    self.steering['decel'] = 7500
 
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
@@ -224,6 +229,9 @@ class chassis:
       # This chassis configuration could not make that tight of a turn.
       raise ValueError("Radius below minimum")
 
+    if abs(velocity) > 100:
+      raise ValueError("Velocity percentage may not exceed 100")
+
     self.currentMotion = (velocity, radius)
     self.angles.clear()
     self.velocity.clear()
@@ -272,7 +280,54 @@ class chassis:
       for vel in self.velocity:
         self.velocity[vel] = self.velocity[vel] * reductionRatio
 
-    # 
+    # If the specified velocity is below minimum, perform all the calculations
+    # above but skip sending the actual motor commands below.
+    # if abs(velocity) < float(self.rolling['minVelocity'])/self.rolling['maxVelocity']:
+      # Below minimum velocity - no action.
+      # return
+
+    # We're sending commands for a particular wheel - steering and rolling
+    # velocity - before we move on to the next wheel. If this causes timing
+    # issues (wheels start moving before they've finished pointing in the
+    # right direction, etc.) we may have to send all steering commands first,
+    # wait until we reach the angles, before sending velocity commands.
+
+    for wheel in self.wheels:
+      name = wheel['name']
+
+      steering = wheel['steering']
+      if steering:
+        angle = self.angles[name]
+        if math.floor(abs(angle)) > math.ceil(self.steering['maxAngle']):
+          # If we trigger this error, it means there's a problem with
+          # minRadius calculation somewhere upstream because we should have
+          # prevented with the minRadius check.
+          raise ValueError("Steering angle {} exceeds maxAngle {}, check minRadius calculation.".format(angle, self.steering['maxAngle']))
+        targetposition = self.steering['maxCount'] * angle / self.steering['maxAngle']
+
+        if wheel['steering']['inverted']:
+          targetposition = -targetposition
+
+        self.rclaw.position_accel_speed_decel(
+          (wheel['steering']['address'],wheel['steering']['motor']),
+          targetposition,
+          self.steering['accel'],
+          self.steering['speed'],
+          self.steering['decel'],
+          1) # 1 means immediate execution, not buffered.
+
+      rolling = wheel['rolling']
+      if rolling:
+        velocity = self.velocity[name]
+        qpps = self.rolling['maxVelocity'] * velocity / 100
+
+        if wheel['rolling']['inverted']:
+          qpps = -qpps
+
+        self.rclaw.velocity_accel(
+          (wheel['rolling']['address'], wheel['rolling']['motor']),
+          qpps,
+          self.rolling['accel'])
 
   def radius_for(self, name, pct_angle):
     """

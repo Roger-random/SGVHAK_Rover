@@ -43,6 +43,18 @@ class Roboclaw_stub:
 	def __init__(self):
 		self.name = "TEST API"
 
+	def SpeedAccelM1(self,address,accel,speed):
+		return True
+
+	def SpeedAccelM2(self,address,accel,speed):
+		return True
+
+	def SpeedAccelDeccelPositionM1(self,address,accel,speed,deccel,position,buffer):
+		return True
+
+	def SpeedAccelDeccelPositionM2(self,address,accel,speed,deccel,position,buffer):
+		return True
+
 	def ReadVersion(self,address):
 		return (1, self.name)
 
