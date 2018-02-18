@@ -114,20 +114,22 @@ class roboclaw_wrapper:
   def check_id(id):
     """
     Verifies that a given perameter is correct formatted id tuple for this class.
-    * Check that it is indeed a tuple with two elements.
+    * Check that it is indeed a tuple with three elements.
     * Check that the first element is an integer in valid range of RoboClaw
       addresses. 128 <= X <= 135
       NOTE: Does not check if there's actually a RoboClaw at that address.
     * Check that the second element is an integer specifying a motor 1 or 2.
       NOTE: Does not check if there's actually a motor connected.
+    * Check that the third element is True or False, specifying whether the
+      motor is inverted.
 
     Raises ValueError if check fails.
     """
     if not isinstance(id, tuple):
       raise ValueError("RoboClaw motor identifier must be a tuple")
 
-    if len(id) != 2:
-      raise ValueError("RoboClaw motor identifier must have two elements: address and motor number")
+    if len(id) != 3:
+      raise ValueError("RoboClaw motor identifier must have three elements: address, motor number, and whether it is inverted")
 
     if not isinstance(id[0], int):
       raise ValueError("RoboClaw address must be an integer")
@@ -140,6 +142,9 @@ class roboclaw_wrapper:
 
     if id[1] != 1 and id[1] != 2:
       raise ValueError("RoboClaw motor number must be 1 or 2")
+
+    if not isinstance(id[2], bool):
+      raise ValueError("Inverted status must be a boolean")
 
     return id
 
@@ -176,7 +181,7 @@ class roboclaw_wrapper:
 
   def version(self, id):
     """Returns a version string for display"""
-    address, motor = self.check_id(id)
+    address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
     return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
@@ -186,13 +191,17 @@ class roboclaw_wrapper:
     Run the specified motor (address,motor#) at the specified percentage of
     maximum velocity.
     """
-    address, motor = self.check_id(id)
+    address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
     if abs(pct_velocity) > 100.1:
       raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
 
     qpps = self.rollingParams['maxVelocity'] * pct_velocity / 100
+
+    if inverted:
+      qpps = -qpps
+
     acceleration = self.rollingParams['acceleration']
 
     if motor==1:
@@ -216,7 +225,7 @@ class roboclaw_wrapper:
     Immediately moves the specified motor (address,motor#) to the specified
     angle expressed in number of degrees off zero center, positive clockwise.
     """
-    address, motor = self.check_id(id)
+    address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
     if abs(angle) > self.hardstopangle:
@@ -224,6 +233,9 @@ class roboclaw_wrapper:
 
     # Translate angle to position
     position = self.hardstopcount * angle / self.hardstopangle
+
+    if inverted:
+      position = -position
 
     acceleration = self.positionParams['accel']
     speed = self.positionParams['speed']

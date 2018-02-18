@@ -90,58 +90,38 @@ class chassis:
       ('name','front_left'),
       ('x',-7.254),
       ('y',10.5),
-      ('rolling', dict([('address',128),
-                        ('motor',2),
-                        ('inverted',False)])),
-      ('steering', dict([('address',131),
-                         ('motor',2),
-                         ('inverted',False)]))]))
+      ('rolling', (128, 2,False)),
+      ('steering', (131, 2,False))]))
     self.wheels.append(dict([
       ('name','mid_left'),
       ('x',-10.073),
       ('y',0),
-      ('rolling', dict([('address',129),
-                        ('motor',2),
-                        ('inverted',False)])),
+      ('rolling', (129, 2,False)),
       ('steering', None)]))
     self.wheels.append(dict([
       ('name','rear_left'),
       ('x',-7.254),
       ('y',-10.5),
-      ('rolling', dict([('address',130),
-                        ('motor',2),
-                        ('inverted',False)])),
-      ('steering', dict([('address',132),
-                         ('motor',2),
-                         ('inverted',False)]))]))
+      ('rolling', (130, 2,False)),
+      ('steering', (132, 2,False))]))
     self.wheels.append(dict([
       ('name','front_right'),
       ('x',7.254),
       ('y',10.5),
-      ('rolling', dict([('address',128),
-                        ('motor',1),
-                        ('inverted',False)])),
-      ('steering', dict([('address',131),
-                         ('motor',1),
-                         ('inverted',False)]))]))
+      ('rolling', (128, 1,False)),
+      ('steering', (131, 1,False))]))
     self.wheels.append(dict([
       ('name','mid_right'),
       ('x',10.073),
       ('y',0),
-      ('rolling', dict([('address',129),
-                        ('motor',1),
-                        ('inverted',False)])),
+      ('rolling', (129, 1,False)),
       ('steering', None)]))
     self.wheels.append(dict([
       ('name','rear_right'),
       ('x',7.254),
       ('y',-10.5),
-      ('rolling', dict([('address',130),
-                        ('motor',1),
-                        ('inverted',False)])),
-      ('steering', dict([('address',132),
-                         ('motor',1),
-                         ('inverted',False)]))]))
+      ('rolling', (130, 1,False)),
+      ('steering', (132, 1,False))]))
 
   def wheelDisplayTable(self):
     """
@@ -178,14 +158,14 @@ class chassis:
     for wheel in self.wheels:
       try:
         rollcontrol = wheel['rolling']
-        rollclaw = self.rclaw.version((rollcontrol['address'],rollcontrol['motor']))
+        rollclaw = self.rclaw.version(rollcontrol)
       except ValueError as ve:
         rollclaw = "(No Response)"
 
       steercontrol = wheel.get('steering', None)
       if steercontrol:
         try:
-          steerclaw = self.rclaw.version((steercontrol['address'],steercontrol['motor']))
+          steerclaw = self.rclaw.version(steercontrol)
         except ValueError as ve:
           steerclaw = "(No Response)"
       else:
@@ -278,21 +258,11 @@ class chassis:
           # prevented with the minRadius check.
           raise ValueError("Steering angle {} exceeds maxAngle {}, check minRadius calculation.".format(angle, self.rclaw.maxangle()))
 
-        if wheel['steering']['inverted']:
-          angle = -angle
-
-        self.rclaw.angle(
-          (wheel['steering']['address'], wheel['steering']['motor']), angle)
+        self.rclaw.angle(steering, angle)
 
       rolling = wheel['rolling']
       if rolling:
-        velocity = self.velocity[name]
-
-        if wheel['rolling']['inverted']:
-          velocity = -velocity
-
-        self.rclaw.velocity(
-          (wheel['rolling']['address'], wheel['rolling']['motor']), velocity)
+        self.rclaw.velocity(rolling, self.velocity[name])
 
   def radius_for(self, name, pct_angle):
     """
