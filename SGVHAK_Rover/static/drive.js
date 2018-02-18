@@ -271,7 +271,7 @@ var sendDriveCommand = function() {
   $.ajax({
     type: "POST",
     url: document.getElementById("command").value,
-    data: {angle:knob.angle, magnitude:knob.magnitude},
+    data: {pct_angle:knob.angle, magnitude:knob.magnitude},
     error: pointerEnd
   })
 }

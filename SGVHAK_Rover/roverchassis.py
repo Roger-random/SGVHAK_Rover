@@ -274,11 +274,13 @@ class chassis:
 
     # 
 
-  def radius_for(self, name, angle):
+  def radius_for(self, name, pct_angle):
     """
     Given the name of a wheel and the steering angle of that wheel, calculate
-    calculate the radius of the resulting rover path. This is used when
-    dictating turns by wheel behavior instead of rover behavior.
+    the radius of the resulting rover path. This is useful when determining
+    minimum turning radius.
+    Angle is described in percentage range of the maximum steering angle, in
+    range of -100 to 100, positive clockwise. (Angle 100 = full right turn.)
     """
     target = None
     for wheel in self.wheels:
@@ -287,14 +289,16 @@ class chassis:
         break
 
     if target == None:
-      raise ValueError("Could not find wheel {} to calculate radius for angle {}.".format(name, angle))
+      raise ValueError("Could not find wheel {} to calculate radius for steering at {} percent of maximum angle.".format(name, pct_angle))
+
+    if abs(pct_angle) > 100:
+      raise ValueError("Steering wheel angle percentage {} exceeds 100".format(pct_angle))
+
+    angle = pct_angle * float(self.steering['maxAngle']) / 100
 
     if abs(angle) < 1:
       # Rounding off to straight ahead
       return infinity
-
-    if abs(angle) > 90:
-      raise ValueError("Steering wheel > 90 degrees not supported.")
 
     if abs(angle) > 89:
       # Rounding off to right angle

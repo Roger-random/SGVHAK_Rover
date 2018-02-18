@@ -52,13 +52,13 @@ class main_menu:
     # reduces workload on RoboClaw serial network and the mechanical bits
     # can't respond super fast anyway.
     # EXCEPTION: If a stop command arrives, stop immediately.
-    angle = float(request.form['angle'])*chassis.steering['maxAngle']/100
+    pct_angle = float(request.form['pct_angle'])
     magnitude = float(request.form['magnitude'])
 
-    if angle >= 0:
-      radius = chassis.radius_for('front_right', angle)
+    if pct_angle >= 0:
+      radius = chassis.radius_for('front_right', pct_angle)
     else:
-      radius = chassis.radius_for('front_left', angle)
+      radius = chassis.radius_for('front_left', pct_angle)
 
     chassis.updateMotion(magnitude, radius)
 
