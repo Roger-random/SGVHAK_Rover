@@ -83,7 +83,7 @@ class chassis:
   def testChassis(self):
     """
     Use a set of hard-coded values for chassis configuraton. In actual use,
-    these values will be read by a configuration file read from disk.
+    these values will be dictated by a configuration file read from disk.
     """
 
     # Use a test stub RoboClaw instead of talking to a real RoboClaw.
@@ -91,18 +91,36 @@ class chassis:
       self.rclaw.connect(dict([('port','TEST')]))
 
     # Values taken from current SGVHAK prototype
-    self.rolling['maxVelocity'] = 6000
-    self.rolling['minVelocity'] = 300
-    self.rolling['accel'] = 7500
+    self.rolling = dict([
+      ('maxVelocity',6000),
+      ('minVelocity',300),
+      ('accel', 7500),
+      ('velocity', dict([('p', 2500),
+                         ('i', 100),
+                         ('d', 500),
+                         ('qpps',10000)]))])
 
     # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
     #   10896 count per output shaft revolution. Hard stops @ 45 degrees,
-    #   configure software not to push beyond 43 degrees (1301 counts)
-    self.steering['maxAngle'] = 43
-    self.steering['maxCount'] = 1301
-    self.steering['speed'] = 5000
-    self.steering['accel'] = 7500
-    self.steering['decel'] = 7500
+    #   configure steering math with limit of 43 degrees (1301 counts) and
+    #   RoboClaw to stop at 45 degrees (+/-1362 counts)
+    self.steering = dict([
+      ('maxAngle', 43),
+      ('maxCount', 1301),
+      ('speed', 5000),
+      ('accel', 7500),
+      ('decel', 7500),
+      ('velocity', dict([('p', 2500),
+                         ('i', 100),
+                         ('d', 500),
+                         ('qpps',10000)])),
+      ('position', dict([('p', 2400),
+                         ('i', 0),
+                         ('d', 500),
+                         ('maxi', 0),
+                         ('deadzone', 1),
+                         ('minpos', -1362),
+                         ('maxpos', 1362)]))])
 
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
