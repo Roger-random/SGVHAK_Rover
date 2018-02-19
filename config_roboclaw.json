@@ -1,0 +1,41 @@
+{
+  "angle": {
+    "accel": 7500,
+    "decel": 7500,
+    "hardstop": {
+      "angle": 45,
+      "count": 1362
+    },
+    "position": {
+      "d": 500,
+      "deadzone": 1,
+      "i": 0,
+      "maxi": 0,
+      "p": 2400
+    },
+    "speed": 5000,
+    "velocity": {
+      "d": 500,
+      "i": 100,
+      "p": 2500,
+      "qpps": 10000
+    }
+  },
+  "connect": {
+    "baudrate": 38400,
+    "port": "TEST",
+    "retries": 3,
+    "timeout": 0.01
+  },
+  "velocity": {
+    "acceleration": 7500,
+    "maxVelocity": 6000,
+    "minVelocity": 300,
+    "velocity": {
+      "d": 500,
+      "i": 100,
+      "p": 2500,
+      "qpps": 10000
+    }
+  }
+}

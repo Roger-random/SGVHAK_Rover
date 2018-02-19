@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import configuration
 from roboclaw import Roboclaw
 from roboclaw_stub import Roboclaw_stub
 
@@ -75,41 +76,6 @@ class roboclaw_wrapper:
   def __init__(self):
     self.roboclaw = None
 
-    # Values taken from current SGVHAK prototype
-    # TODO: Read these from a configuration file.
-    self.rollingParams = dict([
-      ('maxVelocity',6000),
-      ('minVelocity',300),
-      ('acceleration', 7500),
-      ('velocity', dict([('p', 2500),
-                         ('i', 100),
-                         ('d', 500),
-                         ('qpps',10000)]))])
-
-    self.positionParams = dict([
-      ('speed', 5000),
-      ('accel', 7500),
-      ('decel', 7500)])
-
-    # Steering motor: 48 count per motor revolution, 1:227 gear reduction =
-    #   10896 count per output shaft revolution. Hard stops @ 45 degrees
-    #   10896 / 8 = 1362
-    self.hardstopangle = 45
-    self.hardstopcount = 1362
-
-    self.config = dict([
-      ('velocity', dict([('p', 2500),
-                         ('i', 100),
-                         ('d', 500),
-                         ('qpps',10000)])),
-      ('position', dict([('p', 2400),
-                         ('i', 0),
-                         ('d', 500),
-                         ('maxi', 0),
-                         ('deadzone', 1),
-                         ('minpos', -self.hardstopcount),    # -45 degrees
-                         ('maxpos', self.hardstopcount)]))]) #  45 degrees
-
   @staticmethod
   def check_id(id):
     """
@@ -125,7 +91,7 @@ class roboclaw_wrapper:
 
     Raises ValueError if check fails.
     """
-    if not isinstance(id, tuple):
+    if not isinstance(id, (tuple,list)):
       raise ValueError("RoboClaw motor identifier must be a tuple")
 
     if len(id) != 3:
@@ -146,7 +112,7 @@ class roboclaw_wrapper:
     if not isinstance(id[2], bool):
       raise ValueError("Inverted status must be a boolean")
 
-    return id
+    return tuple(id)
 
   def check_roboclaw(self):
     """
@@ -156,24 +122,34 @@ class roboclaw_wrapper:
     if not self.connected():
       raise ValueError("RoboClaw not yet connected")
 
-  def connect(self, parameters):
+  def connect(self):
     """
-    Connect to RoboClaw using provided dictionary of connection parameters
+    Read all configuration parameters (not just connect) and use the connect
+    parameters to create new RoboClaw API handle.
     """
-    portname = parameters['port']
+
+    # First load configuration file
+    config = configuration.configuration("roboclaw")
+    allparams = config.load()
+
+    self.connectParams = allparams['connect']
+    self.velocityParams = allparams['velocity']
+    self.angleParams = allparams['angle']
+
+    # Use connect configuration to create a RoboClaw API handle
+    portname = self.connectParams['port']
     if portname == 'TEST':
       self.roboclaw = Roboclaw_stub()
     else:
-      baudrate = parameters.get('baudrate', 38400)
-      timeout = parameters.get('timeout', 0.01) # Note this is actually interchar timeout
-      retries = parameters.get('retries', 3)
-
+      baudrate = self.connectParams['baudrate']
+      timeout = self.connectParams['timeout']
+      retries = self.connectParams['retries']
       newrc = Roboclaw(portname, baudrate, timeout, retries)
 
       if newrc.Open():
         self.roboclaw = newrc
       else:
-        raise ValueError("Could not connect to RoboClaw with provided parameters")
+        raise ValueError("Could not connect to RoboClaw. {} @ {}".format(portname, baudrate))
 
   def connected(self):
     """Returns True if we have connected Roboclaw API to a serial port"""
@@ -197,12 +173,12 @@ class roboclaw_wrapper:
     if abs(pct_velocity) > 100.1:
       raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
 
-    qpps = self.rollingParams['maxVelocity'] * pct_velocity / 100
+    qpps = self.velocityParams['maxVelocity'] * pct_velocity / 100
 
     if inverted:
       qpps = -qpps
 
-    acceleration = self.rollingParams['acceleration']
+    acceleration = self.velocityParams['acceleration']
 
     if motor==1:
       apiset(self.roboclaw.SpeedAccelM1(
@@ -218,7 +194,7 @@ class roboclaw_wrapper:
     Returns the maximum angle callers should use for their calculation.
     Take the absolute end stop and subtract a little bit of margin.
     """
-    return self.hardstopangle-1.5
+    return self.angleParams['hardstop']['angle']-1.5
 
   def angle(self, id, angle):
     """
@@ -228,18 +204,21 @@ class roboclaw_wrapper:
     address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
-    if abs(angle) > self.hardstopangle:
-      raise ValueError("Steering angle {} exceeds maximum of {} degrees off center".format(angle, self.hardstopangle))
+    hardstopangle = self.angleParams['hardstop']['angle']
+    hardstopcount = self.angleParams['hardstop']['count']
+
+    if abs(angle) > hardstopangle:
+      raise ValueError("Steering angle {} exceeds maximum of {} degrees off center".format(angle, hardstopangle))
 
     # Translate angle to position
-    position = self.hardstopcount * angle / self.hardstopangle
+    position = hardstopcount * angle / hardstopangle
 
     if inverted:
       position = -position
 
-    acceleration = self.positionParams['accel']
-    speed = self.positionParams['speed']
-    deceleration = self.positionParams['decel']
+    acceleration = self.angleParams['accel']
+    speed = self.angleParams['speed']
+    deceleration = self.angleParams['decel']
 
     if motor==1:
       apiset(self.roboclaw.SpeedAccelDeccelPositionM1(

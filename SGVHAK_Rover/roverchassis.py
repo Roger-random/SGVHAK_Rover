@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import math
+import configuration
 import roboclaw_wrapper
 
 # Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
@@ -84,54 +85,10 @@ class chassis:
 
     # Use a test stub RoboClaw instead of talking to a real RoboClaw.
     if not self.rclaw.connected():
-      self.rclaw.connect(dict([('port','TEST')]))
-    self.testchassis()
+      self.rclaw.connect()
+    config = configuration.configuration("roverchassis")
+    self.wheels = config.load()
     self.move_velocity_radius(0)
-
-  def testchassis(self):
-    """
-    Use a set of hard-coded values for chassis configuraton. In actual use,
-    these values will be dictated by a configuration file read from disk.
-    """
-
-    # The order and the X,Y locations of wheels are taken from the reference 
-    # chassis, dimensions are in inches.
-    self.wheels.append(dict([
-      ('name','front_left'),
-      ('x',-7.254),
-      ('y',10.5),
-      ('rolling',(128,2,False)),
-      ('steering',(131,2,False))]))
-    self.wheels.append(dict([
-      ('name','mid_left'),
-      ('x',-10.073),
-      ('y',0),
-      ('rolling',(129,2,False)),
-      ('steering',None)]))
-    self.wheels.append(dict([
-      ('name','rear_left'),
-      ('x',-7.254),
-      ('y',-10.5),
-      ('rolling',(130,2,False)),
-      ('steering',(132,2,False))]))
-    self.wheels.append(dict([
-      ('name','front_right'),
-      ('x',7.254),
-      ('y',10.5),
-      ('rolling',(128,1,False)),
-      ('steering',(131,1,False))]))
-    self.wheels.append(dict([
-      ('name','mid_right'),
-      ('x',10.073),
-      ('y',0),
-      ('rolling',(129,1,False)),
-      ('steering',None)]))
-    self.wheels.append(dict([
-      ('name','rear_right'),
-      ('x',7.254),
-      ('y',-10.5),
-      ('rolling',(130,1,False)),
-      ('steering',(132,1,False))]))
 
   def wheelDisplayTable(self):
     """
