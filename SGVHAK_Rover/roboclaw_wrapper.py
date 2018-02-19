@@ -28,7 +28,7 @@ from roboclaw_stub import Roboclaw_stub
 # For the 'buffered' parameter into RoboClaw API.
 immediate_execution = 1
 
-def apiget(resultTuple, errorMessage="RoboClaw API Getter"):
+def apiget(result_tuple, errormessage="RoboClaw API Getter"):
   """
   Every read operation from the Roboclaw API returns a tuple: index zero
   is 1 for success and 0 for failure. This helper looks for that zero and
@@ -36,24 +36,24 @@ def apiget(resultTuple, errorMessage="RoboClaw API Getter"):
   provided, it is sent into the ValueError constructor.
 
   In the normal case of success, if there was only one other element in
-  the resultTuple, that element is returned by itself (not a single
+  the result_tuple, that element is returned by itself (not a single
   element tuple) If there are more than one, the result is a tuple.
   """
-  if resultTuple[0] == 0:
-    raise ValueError("{} {}".format(errorMessage, str(resultTuple)))
+  if result_tuple[0] == 0:
+    raise ValueError("{} {}".format(errormessage, str(result_tuple)))
 
-  if len(resultTuple) == 2:
-    return resultTuple[1]
+  if len(result_tuple) == 2:
+    return result_tuple[1]
   else:
-    return resultTuple[1:]
+    return result_tuple[1:]
 
-def apiset(result, errorMessage="RoboClaw API Setter"):
+def apiset(result, errormessage="RoboClaw API Setter"):
   """
   Every write operation returns true if successful. If it does not, a
   ValueError is raised with the optional error message parameter
   """
   if not result:
-    raise ValueError(errorMessage)
+    raise ValueError(errormessage)
 
 class roboclaw_wrapper:
   """
@@ -132,18 +132,17 @@ class roboclaw_wrapper:
     config = configuration.configuration("roboclaw")
     allparams = config.load()
 
-    self.connectParams = allparams['connect']
-    self.velocityParams = allparams['velocity']
-    self.angleParams = allparams['angle']
+    self.velocityparams = allparams['velocity']
+    self.angleparams = allparams['angle']
 
     # Use connect configuration to create a RoboClaw API handle
-    portname = self.connectParams['port']
+    portname = allparams['connect']['port']
     if portname == 'TEST':
       self.roboclaw = Roboclaw_stub()
     else:
-      baudrate = self.connectParams['baudrate']
-      timeout = self.connectParams['timeout']
-      retries = self.connectParams['retries']
+      baudrate = allparams['connect']['baudrate']
+      timeout = allparams['connect']['timeout']
+      retries = allparams['connect']['retries']
       newrc = Roboclaw(portname, baudrate, timeout, retries)
 
       if newrc.Open():
@@ -173,12 +172,12 @@ class roboclaw_wrapper:
     if abs(pct_velocity) > 100.1:
       raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
 
-    qpps = self.velocityParams['maxVelocity'] * pct_velocity / 100
+    qpps = self.velocityparams['maxVelocity'] * pct_velocity / 100
 
     if inverted:
       qpps = -qpps
 
-    acceleration = self.velocityParams['acceleration']
+    acceleration = self.velocityparams['acceleration']
 
     if motor==1:
       apiset(self.roboclaw.SpeedAccelM1(
@@ -194,7 +193,7 @@ class roboclaw_wrapper:
     Returns the maximum angle callers should use for their calculation.
     Take the absolute end stop and subtract a little bit of margin.
     """
-    return self.angleParams['hardstop']['angle']-1.5
+    return self.angleparams['hardstop']['angle']-1.5
 
   def angle(self, id, angle):
     """
@@ -204,8 +203,8 @@ class roboclaw_wrapper:
     address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
-    hardstopangle = self.angleParams['hardstop']['angle']
-    hardstopcount = self.angleParams['hardstop']['count']
+    hardstopangle = self.angleparams['hardstop']['angle']
+    hardstopcount = self.angleparams['hardstop']['count']
 
     if abs(angle) > hardstopangle:
       raise ValueError("Steering angle {} exceeds maximum of {} degrees off center".format(angle, hardstopangle))
@@ -216,9 +215,9 @@ class roboclaw_wrapper:
     if inverted:
       position = -position
 
-    acceleration = self.angleParams['accel']
-    speed = self.angleParams['speed']
-    deceleration = self.angleParams['decel']
+    acceleration = self.angleparams['accel']
+    speed = self.angleparams['speed']
+    deceleration = self.angleparams['decel']
 
     if motor==1:
       apiset(self.roboclaw.SpeedAccelDeccelPositionM1(
