@@ -251,14 +251,7 @@ class chassis:
 
       steering = wheel['steering']
       if steering:
-        angle = self.angles[name]
-        if math.floor(abs(angle)) > math.ceil(self.rclaw.maxangle()):
-          # If we trigger this error, it means there's a problem with
-          # minRadius calculation somewhere upstream because we should have
-          # prevented with the minRadius check.
-          raise ValueError("Steering angle {} exceeds maxAngle {}, check minRadius calculation.".format(angle, self.rclaw.maxangle()))
-
-        self.rclaw.angle(steering, angle)
+        self.rclaw.angle(steering, self.angles[name])
 
       rolling = wheel['rolling']
       if rolling:
