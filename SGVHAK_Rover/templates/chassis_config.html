@@ -44,8 +44,8 @@ SOFTWARE.
           {% if wheel['rolling'] == None %}
             <b>Freewheel</b>
           {% else %}
-            <b>Rolling:</b> M{{wheel['rolling']['motor']}}@{{wheel['rolling']['address']}}
-            {% if wheel['rolling']['inverted'] == True %}
+            <b>Rolling:</b> M{{wheel['rolling'][1]}}@{{wheel['rolling'][0]}}
+            {% if wheel['rolling'][2] == True %}
               (Inverted)
             {% endif %}
             <br/>
@@ -56,8 +56,8 @@ SOFTWARE.
           {% if wheel['steering'] == None %}
             Fixed
           {% else %}
-            M{{wheel['steering']['motor']}}@{{wheel['steering']['address']}}
-            {% if wheel['steering']['inverted'] == True %}
+            M{{wheel['steering'][1]}}@{{wheel['steering'][0]}}
+            {% if wheel['steering'][2] == True %}
               (Inverted)
             {% endif %}
             <br/>
