@@ -90,38 +90,38 @@ class chassis:
       ('name','front_left'),
       ('x',-7.254),
       ('y',10.5),
-      ('rolling', (128, 2,False)),
-      ('steering', (131, 2,False))]))
+      ('rolling',(128,2,False)),
+      ('steering',(131,2,False))]))
     self.wheels.append(dict([
       ('name','mid_left'),
       ('x',-10.073),
       ('y',0),
-      ('rolling', (129, 2,False)),
-      ('steering', None)]))
+      ('rolling',(129,2,False)),
+      ('steering',None)]))
     self.wheels.append(dict([
       ('name','rear_left'),
       ('x',-7.254),
       ('y',-10.5),
-      ('rolling', (130, 2,False)),
-      ('steering', (132, 2,False))]))
+      ('rolling',(130,2,False)),
+      ('steering',(132,2,False))]))
     self.wheels.append(dict([
       ('name','front_right'),
       ('x',7.254),
       ('y',10.5),
-      ('rolling', (128, 1,False)),
-      ('steering', (131, 1,False))]))
+      ('rolling',(128,1,False)),
+      ('steering',(131,1,False))]))
     self.wheels.append(dict([
       ('name','mid_right'),
       ('x',10.073),
       ('y',0),
-      ('rolling', (129, 1,False)),
-      ('steering', None)]))
+      ('rolling',(129,1,False)),
+      ('steering',None)]))
     self.wheels.append(dict([
       ('name','rear_right'),
       ('x',7.254),
       ('y',-10.5),
-      ('rolling', (130, 1,False)),
-      ('steering', (132, 1,False))]))
+      ('rolling',(130,1,False)),
+      ('steering',(132,1,False))]))
 
   def wheelDisplayTable(self):
     """
