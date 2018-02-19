@@ -161,6 +161,28 @@ class roboclaw_wrapper:
 
     return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
 
+  def set_velocity_pid(self, id, params):
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    p = params['p']
+    i = params['i']
+    d = params['d']
+    qpps = params['qpps']
+    args = (address, p, i, d, qpps)
+    error = "RoboClaw M{}@{} Velocity P{} I{} D{} QPPS{}".format(motor, address, p, i, d, qpps)
+
+    if motor==1:
+      apiset(self.roboclaw.SetM1VelocityPID(*args), error)
+    else:
+      apiset(self.roboclaw.SetM2VelocityPID(*args), error)
+
+  def init_velocity(self, id):
+    """
+    Initializes the identified motor for wheel rolling control
+    """
+    self.set_velocity_pid(id, self.velocityparams['velocity'])
+
   def velocity(self, id, pct_velocity):
     """
     Run the specified motor (address,motor#) at the specified percentage of
@@ -187,6 +209,32 @@ class roboclaw_wrapper:
       apiset(self.roboclaw.SpeedAccelM2(
         address, acceleration, qpps),
         "Velocity {} acceleration {} on RoboClaw M2@{}".format(qpps, acceleration, address))
+
+  def set_position_pid(self, id, params, limit):
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    p = params['p']
+    i = params['i']
+    d = params['d']
+    maxi = params['maxi']
+    deadzone = params['deadzone']
+    args = (address, p, i, d, maxi, deadzone, -limit, limit)
+    error = "RoboClaw M{}@{} Position P{} I{} D{} MaxI{} Deadzone{} from {} to {}".format(
+      motor, address, p, i, d, maxi, deadzone, -limit, limit)
+
+    if motor==1:
+      apiset(self.roboclaw.SetM1PositionPID(*args), error)
+    else:
+      apiset(self.roboclaw.SetM2PositionPID(*args), error)
+
+  def init_angle(self, id):
+    """
+    Initializes the identified motor for wheel steering control
+    """
+    p = self.angleparams
+    self.set_velocity_pid(id, p['velocity'])
+    self.set_position_pid(id, p['position'], p['hardstop']['count'])
 
   def maxangle(self):
     """

@@ -83,11 +83,20 @@ class chassis:
     if len(self.wheels) > 0:
       return
 
-    # Use a test stub RoboClaw instead of talking to a real RoboClaw.
     if not self.rclaw.connected():
       self.rclaw.connect()
+
     config = configuration.configuration("roverchassis")
     self.wheels = config.load()
+    for wheel in self.wheels:
+      steering = wheel['steering']
+      if steering:
+        self.rclaw.init_angle(steering)
+
+      rolling = wheel['rolling']
+      if rolling:
+        self.rclaw.init_velocity(rolling)
+
     self.move_velocity_radius(0)
 
   def wheelDisplayTable(self):

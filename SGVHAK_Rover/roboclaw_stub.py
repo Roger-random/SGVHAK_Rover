@@ -28,36 +28,47 @@ import struct
 import time
 
 class Roboclaw_stub:
-	"""
-	This class implements a subset of the full RoboClaw API released by
-	Ion Motion Control.
+  """
+  This class implements a subset of the full RoboClaw API released by
+  Ion Motion Control.
 
-	This subset was created for testing purposes. it allows running our app in
-	the absence of an actual RoboClaw attached to the computer.
+  This subset was created for testing purposes. it allows running our app in
+  the absence of an actual RoboClaw attached to the computer.
 
-	The functional fidelity of this class is poor since it only needs to be
-	enough to exercise features of the control application.
-	"""
-	'Stub of Roboclaw Interface Class'
+  The functional fidelity of this class is poor since it only needs to be
+  enough to exercise features of the control application.
+  """
+  'Stub of Roboclaw Interface Class'
 
-	def __init__(self):
-		self.name = "TEST API"
+  def __init__(self):
+    self.name = "TEST API"
 
-	def SpeedAccelM1(self,address,accel,speed):
-		return True
+  def SetM1VelocityPID(self,address,p,i,d,qpps):
+    return True
 
-	def SpeedAccelM2(self,address,accel,speed):
-		return True
+  def SetM2VelocityPID(self,address,p,i,d,qpps):
+    return True
 
-	def SpeedAccelDeccelPositionM1(self,address,accel,speed,deccel,position,buffer):
-		return True
+  def SpeedAccelM1(self,address,accel,speed):
+    return True
 
-	def SpeedAccelDeccelPositionM2(self,address,accel,speed,deccel,position,buffer):
-		return True
+  def SpeedAccelM2(self,address,accel,speed):
+    return True
 
-	def ReadVersion(self,address):
-		return (1, self.name)
+  def SetM1PositionPID(self,address,kp,ki,kd,kimax,deadzone,min,max):
+    return True
 
-	def Open(self):
-		return 1
+  def SetM2PositionPID(self,address,kp,ki,kd,kimax,deadzone,min,max):
+    return True
 
+  def SpeedAccelDeccelPositionM1(self,address,accel,speed,deccel,position,buffer):
+    return True
+
+  def SpeedAccelDeccelPositionM2(self,address,accel,speed,deccel,position,buffer):
+    return True
+
+  def ReadVersion(self,address):
+    return (1, self.name)
+
+  def Open(self):
+    return 1
