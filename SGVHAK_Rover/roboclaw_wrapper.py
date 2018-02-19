@@ -200,15 +200,13 @@ class roboclaw_wrapper:
       qpps = -qpps
 
     acceleration = self.velocityparams['acceleration']
+    args = (address, acceleration, qpps)
+    error = "Velocity {} acceleration {} on RoboClaw M{}@{}".format(qpps, acceleration, motor, address)
 
     if motor==1:
-      apiset(self.roboclaw.SpeedAccelM1(
-        address, acceleration, qpps),
-        "Velocity {} acceleration {} on RoboClaw M1@{}".format(qpps, acceleration, address))
+      apiset(self.roboclaw.SpeedAccelM1(*args), error)
     else:
-      apiset(self.roboclaw.SpeedAccelM2(
-        address, acceleration, qpps),
-        "Velocity {} acceleration {} on RoboClaw M2@{}".format(qpps, acceleration, address))
+      apiset(self.roboclaw.SpeedAccelM2(*args), error)
 
   def set_position_pid(self, id, params, limit):
     address, motor, inverted = self.check_id(id)
@@ -266,12 +264,10 @@ class roboclaw_wrapper:
     acceleration = self.angleparams['accel']
     speed = self.angleparams['speed']
     deceleration = self.angleparams['decel']
+    args = (address, acceleration, speed, deceleration, position, immediate_execution)
+    error = "Position {} via {}/{}/{} on RoboClaw M{}@{}".format(position, acceleration, speed, deceleration, motor, address)
 
     if motor==1:
-      apiset(self.roboclaw.SpeedAccelDeccelPositionM1(
-        address, acceleration, speed, deceleration, position, immediate_execution),
-        "Position {} via {}/{}/{} on RoboClaw M1@{}".format(position, acceleration, speed, deceleration, address))
+      apiset(self.roboclaw.SpeedAccelDeccelPositionM1(*args), error)
     else:
-      apiset(self.roboclaw.SpeedAccelDeccelPositionM2(
-        address, acceleration, speed, deceleration, position, immediate_execution),
-        "Position {} via {}/{}/{} on RoboClaw M2@{}".format(position, acceleration, speed, deceleration, address))
+      apiset(self.roboclaw.SpeedAccelDeccelPositionM2(*args), error)
