@@ -74,15 +74,25 @@ class chassis:
     # sufficient.
     self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
 
-  def testChassis(self):
+  def ensureready(self):
     """
-    Use a set of hard-coded values for chassis configuraton. In actual use,
-    these values will be dictated by a configuration file read from disk.
+    Makes sure this chassis class is ready for work by ensuring the required
+    information is loaded and ready.
     """
+    if len(self.wheels) > 0:
+      return
 
     # Use a test stub RoboClaw instead of talking to a real RoboClaw.
     if not self.rclaw.connected():
       self.rclaw.connect(dict([('port','TEST')]))
+    self.testchassis()
+    self.move_velocity_radius(0)
+
+  def testchassis(self):
+    """
+    Use a set of hard-coded values for chassis configuraton. In actual use,
+    these values will be dictated by a configuration file read from disk.
+    """
 
     # The order and the X,Y locations of wheels are taken from the reference 
     # chassis, dimensions are in inches.
@@ -175,7 +185,7 @@ class chassis:
 
     return rctable
 
-  def updateMotion(self, velocity, radius=infinity):
+  def move_velocity_radius(self, velocity, radius=infinity):
     """
     Given the desired velocity and turning radius, update the angle and
     velocity required for each wheel to perform the desired motion.

@@ -33,20 +33,25 @@ class main_menu:
 
   @app.route('/')
   def index():
+    chassis.ensureready()
     return render_template("index.html")
 
   @app.route('/stop_motors')
   def stop_motors():
-    chassis.updateMotion(0)
+    chassis.ensureready()
+    chassis.move_velocity_radius(0)
     flash("Motors Stopped","success")
     return render_template("index.html")
 
   @app.route('/drive')
   def drive():
+    chassis.ensureready()
     return render_template("drive.html", ui_angle=70)
 
   @app.route('/drive_command', methods=['POST'])
   def drive_command():
+    chassis.ensureready()
+
     # TODO: Limit the frequency of updates to one every 100(?) ms. If more
     # than one update arrive within the window, use the final one. This
     # reduces workload on RoboClaw serial network and the mechanical bits
@@ -60,15 +65,13 @@ class main_menu:
     else:
       radius = chassis.radius_for('front_left', pct_angle)
 
-    chassis.updateMotion(magnitude, radius)
+    chassis.move_velocity_radius(magnitude, radius)
 
     return json.jsonify({'Success':1})
 
   @app.route('/chassis_config')
   def chassis_config():
-    if len(chassis.wheels)==0:
-      chassis.testChassis()
-      chassis.updateMotion(0)
+    chassis.ensureready()
 
     # Render table
     return render_template("chassis_config.html",
@@ -79,6 +82,7 @@ class main_menu:
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():
+    chassis.ensureready()
     wheelInfo = dict()
     for wheel in chassis.wheels:
       name = wheel['name']
