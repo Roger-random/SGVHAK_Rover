@@ -11,10 +11,10 @@ Written under `python 2.7.14` with associated `pip 9.0.1`
 - Activate virtual environment `. venv/bin/activate`. Prompt should now be prepended with `(venv)`
   
 ### Install dependencies
-- `pip install -e .`
+- All dependencies are described in setup.py and can be installed with `pip install -e .`
 
 ### Start Flask
 - `export FLASK_APP=SGVHAK_Rover`
 - To enable debugging (warning: development only) `export FLASK_DEBUG=1`
-- `python -m flask run`
+- `flask run`
 - Open UI by pointing web browser to `http://localhost:5000`
