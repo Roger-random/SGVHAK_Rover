@@ -1,4 +1,4 @@
-<!--
+/*
 MIT License
 
 Copyright (c) 2018 Roger Cheng
@@ -20,19 +20,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
--->
-{% extends "layout.html" %}
-{% block body %}
-<div class="container">
-  <h4 class="center_header">Main Menu</h4>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
-  </div>
-</div>
-{% endblock %}
+*/

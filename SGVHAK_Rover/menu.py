@@ -93,7 +93,20 @@ class main_menu:
       wheelInfo[name]['angle'] = angle
     return json.jsonify(wheelInfo)
 
-  @app.route('/chassis_test')
-  def chassis_test():
-    flash("chassis_test placeholder","success")
-    return render_template("index.html")
+  @app.route('/steering_trim', methods=['GET','POST'])
+  def steering_trim():
+    chassis.ensureready()
+
+    # Find all the wheels that we can steer
+    steered_wheels = list()
+    for wheel in chassis.wheels:
+      name = wheel['name']
+      if wheel['steering']:
+        steered_wheels.append(name)
+
+    if request.method == 'GET':
+      return render_template("steering_trim.html",
+        steered_wheels=steered_wheels)
+    else:
+      # TODO: Actually do something useful.
+      return json.jsonify({'SUCCESS':1})

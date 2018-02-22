@@ -23,16 +23,34 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
+<script type="text/javascript" src="{{url_for('static', filename='steering_trim.js')}}"></script>
 <div class="container">
-  <h4 class="center_header">Main Menu</h4>
+  <h4 class="center_header">Center Steerable Wheels</h4>
+  <p>Step 1: Choose Wheel</p>
   <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive</a>
+    {% for wheel in steered_wheels %}
+    <div class="col s12 l6">
+      <p>
+        <input name="wheel-name" class="wheel-radio" type="radio" id="{{wheel}}"/>
+        <label for="{{wheel}}">{{wheel}}</label>
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+  <p>Step 2: Adjust Angle</p>
+  <div class="row">
+    <a class="waves-effect waves-light btn col s2 blue inc-dec">-5</a>
+    <a class="waves-effect waves-light btn col s2 blue inc-dec">-1</a>
+    <a class="btn col s4 white blue-text">0</a>
+    <a class="waves-effect waves-light btn col s2 blue inc-dec">+1</a>
+    <a class="waves-effect waves-light btn col s2 blue inc-dec">+5</a>
+  </div>
+  <p>Step 3: Cancel or Accept</p>
+  <div class="row">
+    <a class="waves-effect waves-light btn col s12 white blue-text trim-action">Cancel Adjustment, Return To Zero</a>
   </div>
   <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
+    <a class="waves-effect waves-light btn col s12 blue trim-action">Accept Current Angle as New Zero</a>
   </div>
 </div>
 {% endblock %}
