@@ -39,18 +39,18 @@ SOFTWARE.
   </div>
   <p>Step 2: Adjust Angle</p>
   <div class="row">
-    <a class="waves-effect waves-light btn col s2 blue inc-dec">-5</a>
-    <a class="waves-effect waves-light btn col s2 blue inc-dec">-1</a>
-    <a class="btn col s4 white blue-text">0</a>
-    <a class="waves-effect waves-light btn col s2 blue inc-dec">+1</a>
-    <a class="waves-effect waves-light btn col s2 blue inc-dec">+5</a>
+    <a id="minus5" class="waves-effect waves-light btn col s2 blue adjust">-5</a>
+    <a id="minus1" class="waves-effect waves-light btn col s2 blue adjust">-1</a>
+    <a id="angleOut" class="btn col s4 white blue-text">0</a>
+    <a id="plus1" class="waves-effect waves-light btn col s2 blue adjust">+1</a>
+    <a id="plus5" class="waves-effect waves-light btn col s2 blue adjust">+5</a>
   </div>
   <p>Step 3: Cancel or Accept</p>
   <div class="row">
-    <a class="waves-effect waves-light btn col s12 white blue-text trim-action">Cancel Adjustment, Return To Zero</a>
+    <a id="trimCancel" class="waves-effect waves-light btn col s12 white blue-text trim-action">Cancel Adjustment, Return To Zero</a>
   </div>
   <div class="row">
-    <a class="waves-effect waves-light btn col s12 blue trim-action">Accept Current Angle as New Zero</a>
+    <a id="trimZero" class="waves-effect waves-light btn col s12 blue trim-action">Accept Current Angle as New Zero</a>
   </div>
 </div>
 {% endblock %}

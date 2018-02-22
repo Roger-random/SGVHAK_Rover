@@ -21,3 +21,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
+// Hook up event handlers in this file to elements in corresponding HTML.
+$(document).ready(function() {
+  $("input[type=radio]").on("click", radioSelect);
+  $(".adjust").on("click", trimAdjust);
+  $("#trimCancel").on("click", trimCancel);
+  $("#trimZero").on("click", trimZero);
+})
+
+var radioSelect = function(e) {
+  console.log("Radio button selected");
+}
+
+var trimAdjust = function(e) {
+  console.log("Adjustment button clicked");
+}
+
+var trimCancel = function(e) {
+  console.log("Trim action cancelled");
+}
+
+var trimZero = function(e) {
+  console.log("Set position to be zero")
+}
