@@ -52,7 +52,7 @@ class main_menu:
   def drive_command():
     chassis.ensureready()
 
-    # TODO: Limit the frequency of updates to one every 100(?) ms. If more
+    # TODO: Limit the frequency of updates to one every 50ms. If more
     # than one update arrive within the window, use the final one. This
     # reduces workload on RoboClaw serial network and the mechanical bits
     # can't respond super fast anyway.

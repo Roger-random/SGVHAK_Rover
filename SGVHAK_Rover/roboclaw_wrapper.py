@@ -194,7 +194,7 @@ class roboclaw_wrapper:
     if abs(pct_velocity) > 100.1:
       raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
 
-    qpps = self.velocityparams['maxVelocity'] * pct_velocity / 100
+    qpps = int(self.velocityparams['maxVelocity'] * pct_velocity / 100)
 
     if inverted:
       qpps = -qpps
@@ -256,7 +256,7 @@ class roboclaw_wrapper:
       raise ValueError("Steering angle {} exceeds maximum of {} degrees off center".format(angle, hardstopangle))
 
     # Translate angle to position
-    position = hardstopcount * angle / hardstopangle
+    position = int(hardstopcount * angle / hardstopangle)
 
     if inverted:
       position = -position
