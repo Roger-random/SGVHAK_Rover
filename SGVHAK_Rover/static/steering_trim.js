@@ -28,20 +28,94 @@ $(document).ready(function() {
   $(".adjust").on("click", trimAdjust);
   $("#trimCancel").on("click", trimCancel);
   $("#trimZero").on("click", trimZero);
+
+  postTrimUrl = document.getElementById("steering_trim").value;
 })
 
+var angle = 0; // The angle value shown on screen
+var selectedWheel = null; // Name of wheel selected via radio button
+var postTrimUrl = null; // The URL to use for POST trim data.
+
+// When a radio button is clicked to select a wheel, enable to angle adjustment
+// controls and disable the wheel select to keep it focused on one wheel.
 var radioSelect = function(e) {
-  console.log("Radio button selected");
+  selectedWheel = e.target.id;
+  $("input[type=radio]").attr("disabled","disabled");
+  $(".adjust").removeAttr("disabled");
+  $("#trimCancel").removeAttr("disabled");
+  $("#trimZero").removeAttr("disabled");
 }
 
+// User has clicked on a movement button to move the selected wheel a little
+// bit, looking for the center.
 var trimAdjust = function(e) {
-  console.log("Adjustment button clicked");
+  var trimAction = e.target.id;
+
+  // Make adjustment commanded by user click.
+  if (trimAction.startsWith("plus")) {
+    var addAmount = parseInt(trimAction.substr(4));
+    angle += addAmount;
+  } else if (trimAction.startsWith("minus")) {
+    var subtractAmount = parseInt(trimAction.substr(5));
+    angle -= subtractAmount;
+  } else {
+    console.log("Invalid action for trim button");
+  }
+
+  // Now that wheel steering angle has been updated, POST to controller.
+  $.ajax({
+    type: "POST",
+    url: postTrimUrl,
+    data: {wheel: selectedWheel, move_to:angle},
+    complete: postComplete
+  })
+
+  // Update on onscreen indicator accordingly.
+  $("#angleOut").text(angle);
 }
 
+// When user either commits angle as new zero, or cancel out and leave things
+// unchanged, we want to reset the UI by disabling all the adjustment controls
+// and turn the wheel selection back on.
+var resetTrimUI = function() {
+  angle = 0;
+  $("#angleOut").text(angle);
+  $("input[type=radio]").removeAttr("disabled");
+  $(".adjust").attr("disabled","disabled");
+  $("#trimCancel").attr("disabled","disabled");
+  $("#trimZero").attr("disabled","disabled");
+}
+
+// User has chosen to cancel trim action. POST to controller to ask it to steer
+// wheel back to its zero position, and reset the UI to allow selecting another
+// wheel.
 var trimCancel = function(e) {
-  console.log("Trim action cancelled");
+  $.ajax({
+    type: "POST",
+    url: postTrimUrl,
+    data: {wheel: selectedWheel, move_to:0},
+    complete: postComplete
+  })
+
+  resetTrimUI();
 }
 
+// User has chosen to commit trim action. POST to controller to ask it to use
+// the current position as the new zero, and reset UI to allow selecting
+// another wheel.
 var trimZero = function(e) {
-  console.log("Set position to be zero")
+
+  $.ajax({
+    type: "POST",
+    url: postTrimUrl,
+    data: {wheel: selectedWheel, set_zero:angle},
+    complete: postComplete
+  })
+
+  resetTrimUI();
+}
+
+// Called when POST action is complete.
+var postComplete = function(jqXHR, textStatus) {
+  console.log(textStatus); // TODO: remove this debug output once running
 }

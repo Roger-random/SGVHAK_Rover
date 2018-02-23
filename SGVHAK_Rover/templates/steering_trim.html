@@ -24,33 +24,34 @@ SOFTWARE.
 {% extends "layout.html" %}
 {% block body %}
 <script type="text/javascript" src="{{url_for('static', filename='steering_trim.js')}}"></script>
+<input type="hidden" id="steering_trim" value="{{url_for('steering_trim')}}" />
 <div class="container">
-  <h4 class="center_header">Center Steerable Wheels</h4>
+  <h4 class="center_header">Adjust Wheel Centering</h4>
   <p>Step 1: Choose Wheel</p>
   <div class="row">
     {% for wheel in steered_wheels %}
     <div class="col s12 l6">
       <p>
         <input name="wheel-name" class="wheel-radio" type="radio" id="{{wheel}}"/>
-        <label for="{{wheel}}">{{wheel}}</label>
+        <label class="blue-text" for="{{wheel}}">{{wheel}}</label>
       </p>
     </div>
     {% endfor %}
   </div>
   <p>Step 2: Adjust Angle</p>
   <div class="row">
-    <a id="minus5" class="waves-effect waves-light btn col s2 blue adjust">-5</a>
-    <a id="minus1" class="waves-effect waves-light btn col s2 blue adjust">-1</a>
+    <a id="minus5" class="waves-effect waves-light btn col s2 blue adjust" disabled>-5</a>
+    <a id="minus1" class="waves-effect waves-light btn col s2 blue adjust" disabled>-1</a>
     <a id="angleOut" class="btn col s4 white blue-text">0</a>
-    <a id="plus1" class="waves-effect waves-light btn col s2 blue adjust">+1</a>
-    <a id="plus5" class="waves-effect waves-light btn col s2 blue adjust">+5</a>
+    <a id="plus1" class="waves-effect waves-light btn col s2 blue adjust" disabled>+1</a>
+    <a id="plus5" class="waves-effect waves-light btn col s2 blue adjust" disabled>+5</a>
   </div>
   <p>Step 3: Cancel or Accept</p>
   <div class="row">
-    <a id="trimCancel" class="waves-effect waves-light btn col s12 white blue-text trim-action">Cancel Adjustment, Return To Zero</a>
+    <a id="trimCancel" class="waves-effect waves-light btn col s12 white blue-text trim-action" disabled>Cancel Adjustment, Return To Zero</a>
   </div>
   <div class="row">
-    <a id="trimZero" class="waves-effect waves-light btn col s12 blue trim-action">Accept Current Angle as New Zero</a>
+    <a id="trimZero" class="waves-effect waves-light btn col s12 blue trim-action" disabled>Accept Current Angle as New Zero</a>
   </div>
 </div>
 {% endblock %}
