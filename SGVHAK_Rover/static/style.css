@@ -40,3 +40,25 @@ SOFTWARE.
   /* Disable touch scrolling when touch events are on the control pad */
   touch-action: none;
 }
+
+/* Chassis Configuration */
+canvas {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+p {
+	margin:0;
+}
+.sub-head {
+	font-weight: 700;
+}
+
+/* Media Queries */
+/* Small Devices */
+
+@media only screen and (max-width: 500px) {
+	canvas {
+		margin-left: -20px;
+	}
+}
