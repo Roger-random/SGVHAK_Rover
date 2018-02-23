@@ -60,6 +60,8 @@ class main_menu:
     pct_angle = float(request.form['pct_angle'])
     magnitude = float(request.form['magnitude'])
 
+    # TODO: Find a more general way to do this math rather than hard-coding
+    # wheel names.
     if pct_angle >= 0:
       radius = chassis.radius_for('front_right', pct_angle)
     else:
@@ -108,5 +110,15 @@ class main_menu:
       return render_template("steering_trim.html",
         steered_wheels=steered_wheels)
     else:
-      # TODO: Actually do something useful.
-      return json.jsonify({'SUCCESS':1})
+      adjWheel = request.form['wheel']
+
+      if "move_to" in request.form:
+        chassis.steer_wheel(adjWheel, int(request.form['move_to']))
+
+        return json.jsonify({'wheel':adjWheel, 'move_to':request.form['move_to']})
+      elif "set_zero" in request.form:
+        chassis.steer_setzero(adjWheel)
+
+        return json.jsonify({'wheel':adjWheel, 'set_zero':request.form['set_zero']})
+      else:
+        raise ValueError("Invalid POST parameters.")

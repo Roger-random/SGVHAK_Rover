@@ -43,6 +43,12 @@ class Roboclaw_stub:
   def __init__(self):
     self.name = "TEST API"
 
+  def SetEncM1(self,address,cnt):
+    return True
+
+  def SetEncM2(self,address,cnt):
+    return True
+
   def SetM1VelocityPID(self,address,p,i,d,qpps):
     return True
 

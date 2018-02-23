@@ -264,3 +264,37 @@ class chassis:
       return wheel['x']
 
     return wheel['x'] + (wheel['y']/math.tan(math.radians(angle)))
+
+  def steering_by_name(self, wheel_name):
+    """
+    Find a steerable wheel by the given name. Returns wheel reference if
+    found. If wheel is not found, or wheel is not steerable, will raise
+    ValueError.
+    """
+    namedWheel = None
+    for wheel in self.wheels:
+      if wheel['name'] == wheel_name:
+        namedWheel = wheel
+        break
+
+    if namedWheel == None:
+      raise ValueError("Invalid wheel name")
+
+    if namedWheel['steering'] == None:
+      raise ValueError("Specified wheel may not be steered")
+
+    return namedWheel
+
+  def steer_wheel(self, wheel_name, angle):
+    """
+    Steer the named wheel to the specified angle
+    """
+    adjust_wheel = self.steering_by_name(wheel_name)
+    self.rclaw.angle(adjust_wheel['steering'], angle)
+
+  def steer_setzero(self, wheel_name):
+    """
+    The named wheel's current steering angle is set as new zero position
+    """
+    zero_wheel = self.steering_by_name(wheel_name)
+    self.rclaw.steer_setzero(zero_wheel['steering'])

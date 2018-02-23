@@ -271,3 +271,18 @@ class roboclaw_wrapper:
       apiset(self.roboclaw.SpeedAccelDeccelPositionM1(*args), error)
     else:
       apiset(self.roboclaw.SpeedAccelDeccelPositionM2(*args), error)
+
+  def steer_setzero(self, id):
+    """
+    Set the identified steering motor's encoder to zero.
+    """
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    args = (address, 0)
+    error = "Reset encoder on RoboClaw M{}@{}".format(motor,address)
+
+    if motor==1:
+      apiset(self.roboclaw.SetEncM1(*args), error)
+    else:
+      apiset(self.roboclaw.SetEncM2(*args), error)
