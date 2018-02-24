@@ -48,28 +48,31 @@ class main_menu:
     chassis.ensureready()
     return render_template("drive.html", ui_angle=70)
 
-  @app.route('/drive_command', methods=['POST'])
+  @app.route('/drive_command', methods=['GET','POST'])
   def drive_command():
     chassis.ensureready()
 
-    # TODO: Limit the frequency of updates to one every 50ms. If more
-    # than one update arrive within the window, use the final one. This
-    # reduces workload on RoboClaw serial network and the mechanical bits
-    # can't respond super fast anyway.
-    # EXCEPTION: If a stop command arrives, stop immediately.
-    pct_angle = float(request.form['pct_angle'])
-    magnitude = float(request.form['magnitude'])
-
-    # TODO: Find a more general way to do this math rather than hard-coding
-    # wheel names.
-    if pct_angle >= 0:
-      radius = chassis.radius_for('front_right', pct_angle)
+    if request.method == 'GET':
+      return render_template("drive_command.html")
     else:
-      radius = chassis.radius_for('front_left', pct_angle)
+      # TODO: Limit the frequency of updates to one every 50ms. If more
+      # than one update arrive within the window, use the final one. This
+      # reduces workload on RoboClaw serial network and the mechanical bits
+      # can't respond super fast anyway.
+      # EXCEPTION: If a stop command arrives, stop immediately.
+      pct_angle = float(request.form['pct_angle'])
+      magnitude = float(request.form['magnitude'])
 
-    chassis.move_velocity_radius(magnitude, radius)
+      # TODO: Find a more general way to do this math rather than hard-coding
+      # wheel names.
+      if pct_angle >= 0:
+        radius = chassis.radius_for('front_right', pct_angle)
+      else:
+        radius = chassis.radius_for('front_left', pct_angle)
 
-    return json.jsonify({'Success':1})
+      chassis.move_velocity_radius(magnitude, radius)
+
+      return json.jsonify({'Success':1})
 
   @app.route('/chassis_config')
   def chassis_config():

@@ -23,19 +23,42 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
+<input type="hidden" id="command" value="{{url_for('drive_command')}}" />
 <div class="container">
-  <h4 class="center_header">Main Menu</h4>
+  <h4 class="center_header">Send Velocity+Angle Command</h4>
   <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive by TouchPad</a>
+    <div class="col s2">
+      <h5>Velocity %</h5>
+    </div>
+    <div class="col s8">
+      <p class="range-field">
+        <input type="range" id="velocityRange" min="-100" max="100" />
+      </p>
+    </div>
+    <div class="col s2">
+      <a id="velocityZero" class="waves-effect waves-light btn col s12 light-blue lighten-5 blue-text">Zero</a>
+    </div>
   </div>
   <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_command')}}">Drive by Angle/Velocity</a>
+    <div class="col s2">
+      <h5>Angle %</h5>
+    </div>
+    <div class="col s8">
+      <p class="range-field">
+        <input type="range" id="angleRange" min="-100" max="100" />
+      </p>
+    </div>
+    <div class="col s2">
+      <a id="angleZero" class="waves-effect waves-light btn col s12 light-blue lighten-5 blue-text">Zero</a>
+    </div>
   </div>
   <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
+    <div class="col s4 offset-s1">
+      <a id="sendCommand" class="waves-effect waves-light btn col s12 blue">Send Command</a>
+    </div>
+    <div class="col s4 offset-s2">
+      <a id="sendCommand" class="waves-effect waves-light btn col s12 white blue-text">Send Stop Command</a>
+    </div>
   </div>
 </div>
 {% endblock %}
