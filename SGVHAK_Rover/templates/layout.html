@@ -44,22 +44,25 @@ SOFTWARE.
   {% endfor %}
   </script>
   <nav class="nav-extended blue darken-4">
-    <div class="row nav-wrapper container">
-      <!-- <div class="row"> -->
+    <div class="nav-wrapper valign-wrapper">
+      <div class="container">
+        <div class="row">
 
-        <div class="col s4">
-          <a class="waves-effect waves-light btn blue darken-3" href="/">SGVHAK Rover</a>
-        </div>
+          <div class="col s4">
+            <a class="waves-effect waves-light btn blue darken-3 left" href="/">SGVHAK Rover</a>
+          </div>
 
-        <div class="col s4">
-          <h6 class="center">{{page_title}}</h6>
-        </div>
+          <div class="col s4">
+            <h6 class="center">{{page_title}}</h6>
+          </div>
 
-        <div class="col s4">
-          <a class="waves-effect waves-light btn red darken-4" href="{{url_for('stop_motors')}}">Stop Motors</a>
-        </div>
-      </div>
-    <!-- </div> -->
+          <div class="col s4">
+            <a class="waves-effect waves-light btn red darken-4 right" href="{{url_for('stop_motors')}}">Stop Motors</a>
+          </div>
+
+        </div><!-- row -->
+      </div><!-- container -->
+    </div><!-- nav-wrapper -->
   </nav>
   {% block body %}{% endblock %}
 </body>
