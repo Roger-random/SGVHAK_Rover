@@ -34,7 +34,8 @@ class main_menu:
   @app.route('/')
   def index():
     chassis.ensureready()
-    return render_template("index.html")
+    return render_template("index.html",
+      page_title = 'Main Menu')
 
   @app.route('/stop_motors')
   def stop_motors():
@@ -46,14 +47,17 @@ class main_menu:
   @app.route('/drive')
   def drive():
     chassis.ensureready()
-    return render_template("drive.html", ui_angle=70)
+    return render_template("drive.html", 
+      ui_angle=70,
+      page_title = 'Drive by Touchpad')
 
   @app.route('/drive_command', methods=['GET','POST'])
   def drive_command():
     chassis.ensureready()
 
     if request.method == 'GET':
-      return render_template("drive_command.html")
+      return render_template("drive_command.html",
+        page_title = 'Velocity & Angle Commands')
     else:
       # TODO: Limit the frequency of updates to one every 50ms. If more
       # than one update arrive within the window, use the final one. This
@@ -83,7 +87,8 @@ class main_menu:
       wheelTable = chassis.wheelDisplayTable(),
       velocity = chassis.velocity,
       angles = chassis.angles,
-      roboclaw_table = chassis.roboclaw_table())
+      roboclaw_table = chassis.roboclaw_table(),
+      page_title = 'Chassis Configuraton')
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():
@@ -101,6 +106,8 @@ class main_menu:
   @app.route('/steering_trim', methods=['GET','POST'])
   def steering_trim():
     chassis.ensureready()
+    return render_template("steering_trim.html",
+      page_title = 'Steering Trim')
 
     # Find all the wheels that we can steer
     steered_wheels = list()
