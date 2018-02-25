@@ -42,6 +42,9 @@ SOFTWARE.
 }
 
 /* Chassis Configuration */
+.container .row {
+	margin-bottom: 0.3rem;
+}
 canvas {
 	display: block;
 	margin-left: auto;
