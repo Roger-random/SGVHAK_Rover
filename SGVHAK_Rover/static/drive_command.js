@@ -1,4 +1,4 @@
-<!--
+/*
 MIT License
 
 Copyright (c) 2018 Roger Cheng
@@ -20,22 +20,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
--->
-{% extends "layout.html" %}
-{% block body %}
-<div class="container">
-  <h4 class="center_header">Main Menu</h4>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive by TouchPad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_command')}}">Drive by Angle/Velocity</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
-  </div>
-</div>
-{% endblock %}
+*/
+
+// Hook up event listeners to HTML controls
+$(document).ready(function() {
+  $("#velocityZero").on("click", function(e) {
+    $("#velocityRange").val(0);
+  });
+  $("#angleZero").on("click", function(e) {
+    $("#angleRange").val(0);
+  });
+  $("#sendStopCommand").on("click", function(e) {
+    $("#velocityRange").val(0);
+    sendCommand(e);
+  });
+  $("#sendCommand").on("click", sendCommand);
+})
+
+var sendCommand = function(e) {
+  var velocity = $("#velocityRange").val();
+  var angle = $("#angleRange").val();
+
+  $.ajax({
+    type: "POST",
+    url: document.getElementById("command").value,
+    data: {pct_angle:angle, magnitude:velocity}
+  })
+}
