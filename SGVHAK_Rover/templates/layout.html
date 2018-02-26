@@ -23,10 +23,10 @@ SOFTWARE.
 -->
 <!doctype html>
 <head>
-  <title>SGVHAK Rover</title>
+  <title>{{page_title}} | SGVHAK Rover</title>
   <meta charset="utf-8" />
   <!-- Materialize: Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <link rel="stylesheet" type="text/css" href=".{{url_for('static', filename='libraries/materialize/css/materialize.min.css')}}">
 
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -34,9 +34,9 @@ SOFTWARE.
 </head>
 <body>
   <!--Import jQuery before materialize.js-->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src=".{{url_for('static', filename='libraries/jquery-3.3.1.min.js')}}"></script>
   <!-- Materialize: Compiled and minified JavaScript -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  <script type="text/javascript" src=".{{url_for('static', filename='libraries/materialize/js/materialize.min.js')}}"></script>
 
   <script type="text/javascript">
   {% for category, message in get_flashed_messages(with_categories=true) %}
@@ -44,14 +44,25 @@ SOFTWARE.
   {% endfor %}
   </script>
   <nav class="nav-extended blue darken-4">
-    <div class="nav-wrapper container">
-      <div class="left">
-        <a class="waves-effect waves-light btn blue darken-3" href="/">SGVHAK Rover</a>
-      </div>
-      <div class="right">
-        <a class="waves-effect waves-light btn red darken-4" href="{{url_for('stop_motors')}}">Stop Motors</a>
-      </div>
-    </div>
+    <div class="nav-wrapper valign-wrapper">
+      <div class="container">
+        <div class="row">
+
+          <div class="col s4">
+            <a class="waves-effect waves-light btn blue darken-3 left" href="/">SGVHAK Rover</a>
+          </div>
+
+          <div class="col s4">
+            <h6 class="center">{{page_title}}</h6>
+          </div>
+
+          <div class="col s4">
+            <a class="waves-effect waves-light btn red darken-4 right" href="{{url_for('stop_motors')}}">Stop Motors</a>
+          </div>
+
+        </div><!-- row -->
+      </div><!-- container -->
+    </div><!-- nav-wrapper -->
   </nav>
   {% block body %}{% endblock %}
 </body>

@@ -26,7 +26,6 @@ SOFTWARE.
 <script type="text/javascript" src="{{url_for('static', filename='steering_trim.js')}}"></script>
 <input type="hidden" id="steering_trim" value="{{url_for('steering_trim')}}" />
 <div class="container">
-  <h4 class="center_header">Adjust Wheel Centering</h4>
   <p>Step 1: Choose Wheel</p>
   <div class="row">
     {% for wheel in steered_wheels %}

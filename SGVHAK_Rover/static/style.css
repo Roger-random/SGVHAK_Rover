@@ -31,12 +31,32 @@ SOFTWARE.
 .flash.error {
   background: maroon;
 }
-
-.center_header {
-  text-align: center;
-}
-
 #controlPad {
   /* Disable touch scrolling when touch events are on the control pad */
   touch-action: none;
+}
+/* Chassis Configuration */
+.container .row {
+	margin-bottom: 0.3rem;
+}
+canvas {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+p {
+	margin:0;
+}
+.sub-head {
+	font-weight: 700;
+}
+
+/* Media Queries */
+/* TODO: adjust canvas for devices between 501px and 700 ish px */
+/* Small Devices */
+
+@media only screen and (max-width: 500px) {
+	canvas {
+		margin-left: -20px;
+	}
 }
