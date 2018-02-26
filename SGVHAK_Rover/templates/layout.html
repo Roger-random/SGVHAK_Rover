@@ -36,7 +36,7 @@ SOFTWARE.
   <!--Import jQuery before materialize.js-->
   <script type="text/javascript" src=".{{url_for('static', filename='libraries/jquery-3.3.1.min.js')}}"></script>
   <!-- Materialize: Compiled and minified JavaScript -->
-  <script type="text/javascript" src=".{{url_for('static', filename='libraries/materialize/js/materialize.min')}}"></script>
+  <script type="text/javascript" src=".{{url_for('static', filename='libraries/materialize/js/materialize.min.js')}}"></script>
 
   <script type="text/javascript">
   {% for category, message in get_flashed_messages(with_categories=true) %}
