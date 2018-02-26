@@ -82,9 +82,31 @@ class main_menu:
   def chassis_config():
     chassis.ensureready()
 
+    wheelDisplayTable = chassis.wheelDisplayTable()
+    wheelOffset = dict()
+
+    # Create a table for CSS grid layout column offsets
+    for row in wheelDisplayTable.values():
+      # Every row starts with zero accumulated offset
+      cumulative_offset = 0
+      for column in row.values():
+        if len(column) == 0:
+          # Each column without information will add an offset of 2 for
+          # the first following non-empty column
+          cumulative_offset = cumulative_offset + 2
+        else:
+          for wheel in column:
+            if cumulative_offset > 0:
+              # Pick up the accumulated offset, reset accumulator to zero.
+              wheelOffset[wheel['name']] = "offset-m{}".format(cumulative_offset)
+              cumulative_offset = 0
+            else:
+              wheelOffset[wheel['name']] = ""
+
     # Render table
     return render_template("chassis_config.html",
-      wheelTable = chassis.wheelDisplayTable(),
+      wheelTable = wheelDisplayTable,
+      wheelOffset = wheelOffset,
       velocity = chassis.velocity,
       angles = chassis.angles,
       roboclaw_table = chassis.roboclaw_table(),
