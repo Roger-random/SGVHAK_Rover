@@ -52,7 +52,7 @@ p {
 }
 
 /* Media Queries */
-/* Todo: adjust canvas for devices between 501px and 700 ish px */
+/* TODO: adjust canvas for devices between 501px and 700 ish px */
 /* Small Devices */
 
 @media only screen and (max-width: 500px) {
