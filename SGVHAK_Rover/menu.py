@@ -128,8 +128,6 @@ class main_menu:
   @app.route('/steering_trim', methods=['GET','POST'])
   def steering_trim():
     chassis.ensureready()
-    return render_template("steering_trim.html",
-      page_title = 'Steering Trim')
 
     # Find all the wheels that we can steer
     steered_wheels = list()
@@ -140,7 +138,8 @@ class main_menu:
 
     if request.method == 'GET':
       return render_template("steering_trim.html",
-        steered_wheels=steered_wheels)
+        steered_wheels=steered_wheels,
+        page_title = 'Steering Trim')
     else:
       adjWheel = request.form['wheel']
 
