@@ -33,7 +33,7 @@ $(window).resize(function() {
   drawPad();
 });
 
-// Control pad size.
+// Default control pad size.
 var padSize = 300;
 
 // Center coordinate to use pad calculations
@@ -43,14 +43,31 @@ var centerY = padSize/2;
 // Knob class encapsulates the functionality associated with the control knob
 class Knob {
   constructor(knobRadius, maxRadius, uiAngle) {
+    // (knobX,knobY is relative to pad center at (0,0)
     this.knobX = 0;
     this.knobY = 0;
+
+    // Polar coordinate interpretation of (knobX,knobY). Angle is positive
+    // clockwise and zero angle is straight up (+Y axis).
     this.angle = 0;
     this.magnitude = 0;
+
+    // Maximum angle to permit left-right (X-axis) knob movement. This is
+    // purely for UI and has no relation to the maximum steering angle of
+    // underlying mechanical components.
     this.uiAngle = uiAngle;
+
+    // Radius for drawing visual representation of control knob.
     this.knobRadius = knobRadius;
+
+    // Maximum permitted distance from center (0,0) to (knobX,knobY)
     this.maxRadius = maxRadius;
+
+    // Whether the knob is current tracking input events.
     this.knobTracking = false;
+
+    // Whenthe knob is tracking a multitouch event, ID for the touch point
+    // currently being tracked.
     this.knobTrackingTouchPoint = null;
   }
 
@@ -138,8 +155,8 @@ class Knob {
         calcAngle = 180-this.uiAngle;
       }
       var calcAngleRadians = calcAngle * Math.PI / 180;
-      this.knobX = Math.sin(calcAngleRadians) * hypot;
-      this.knobY = Math.cos(calcAngleRadians) * -hypot;
+      this.knobX = Math.round(Math.sin(calcAngleRadians) * hypot);
+      this.knobY = Math.round(Math.cos(calcAngleRadians) * -hypot);
     }
 
     // Translate to wheel control values.
@@ -147,16 +164,16 @@ class Knob {
     //    -100 (full left @ uiAngle) to 100 (full right uiAngle).
     //  * Magnitude range from 100 (full speed ahead) to -100 (full reverse)
     if (calcAngle >= -90 && calcAngle <= 90) {
-      this.magnitude = 100 * hypot/this.maxRadius;
+      this.magnitude = Math.round(100 * hypot/this.maxRadius);
     } else {
       if (calcAngle > 90) {
         calcAngle = 180-calcAngle;
       } else {
         calcAngle = -180-calcAngle;
       }
-      this.magnitude = -100 * hypot/this.maxRadius;
+      this.magnitude = Math.round(-100 * hypot/this.maxRadius);
     }
-    this.angle = 100 * calcAngle/this.uiAngle;
+    this.angle = Math.round(100 * calcAngle/this.uiAngle);
   }
 
   // Draws knob on the given context. Caller is expected to have transformed
