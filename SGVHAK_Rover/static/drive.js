@@ -284,13 +284,38 @@ var pointerEnd = function() {
 }
 
 // Send control knob location to server
+// Because input events may occur faster than the underlying mechanical bits
+// can respond, we constrain the frequency of updates we send to the server.
+var sendDriveTimer = null;
+
 var sendDriveCommand = function() {
+  if (knob.magnitude == 0) {
+    // Magnitude zero is a stop command, which we execute immediately.
+    postCommand()
+  }
+  if ( sendDriveTimer == null) {
+    // No timer, so let's start one to respond to this burst of events.
+    sendDriveTimer = window.setTimeout(postCommand, 200 /* milliseconds */);
+  }
+
+  // If magnitude is not zero and there is already a timer, do nothing.
+}
+
+// Method to actually send data to server, rate of calling this function
+// is contrained by sendDriveCommand() use of sendDriveTimer.
+var postCommand = function() {
   $.ajax({
     type: "POST",
     url: document.getElementById("command").value,
     data: {pct_angle:knob.angle, magnitude:knob.magnitude},
     error: pointerEnd
   })
+
+  // Command has bee POST-ed to server, clear the timer for the next batch.
+  if (sendDriveTimer) {
+    window.clearTimeout(sendDriveTimer);
+    sendDriveTimer = null;
+  }
 }
 
 // For mouse control, we only want to start the knob tracking if the user
