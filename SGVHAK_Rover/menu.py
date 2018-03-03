@@ -33,12 +33,18 @@ class main_menu:
 
   @app.route('/')
   def index():
+    """
+    Main menu, home of rover UI.
+    """
     chassis.ensureready()
     return render_template("index.html",
       page_title = 'Main Menu')
 
   @app.route('/stop_motors')
   def stop_motors():
+    """
+    Stop motors immediately
+    """
     chassis.ensureready()
     chassis.move_velocity_radius(0)
     flash("Motors Stopped","success")
@@ -46,6 +52,9 @@ class main_menu:
 
   @app.route('/drive')
   def drive():
+    """
+    Drive by circular touchpad control
+    """
     chassis.ensureready()
     return render_template("drive.html", 
       ui_angle=70,
@@ -53,6 +62,9 @@ class main_menu:
 
   @app.route('/drive_command', methods=['GET','POST'])
   def drive_command():
+    """
+    Allows user to send a single angle+velocity command to chassis.
+    """
     chassis.ensureready()
 
     if request.method == 'GET':
@@ -80,13 +92,43 @@ class main_menu:
 
   @app.route('/chassis_config')
   def chassis_config():
+    """
+    Returns HTML to display current chassis configuration, including status
+    like desired angle and velocity of individual wheels.
+    """
     chassis.ensureready()
 
-    wheelDisplayTable = chassis.wheelDisplayTable()
-    wheelOffset = dict()
+    # Generate a table where unique wheel X/Y value gets a column/row so
+    # we know where to place them relative to each other on screen.
+    rows = set()
+    columns = set()
 
-    # Create a table for CSS grid layout column offsets
-    for row in wheelDisplayTable.values():
+    # Count the unique X/Y coordinates into columns/rows
+    for wheel in chassis.wheels.values():
+      rows.add(wheel.y)
+      columns.add(wheel.x)
+
+    # Sets enforced uniqueness, now we turn them into a list so we can sort.
+    rowlist = list(rows)
+    rowlist.sort(reverse=True)
+    columnlist = list(columns)
+    columnlist.sort()
+
+    # Create a dictionary of dicationaries to hold entries.
+    wheelTable = dict()
+    for row in rowlist:
+      wheelTable[row] = dict()
+      for column in columnlist:
+        wheelTable[row][column] = list()
+
+    # Put each wheel into its matching location in the table.
+    for wheel in chassis.wheels.values():
+      wheelTable[wheel.y][wheel.x].append(wheel)
+
+    # To help space out the above information properly, generate a table for
+    # CSS grid layout column offsets.
+    wheelOffset = dict()
+    for row in wheelTable.values():
       # Every row starts with zero accumulated offset
       cumulative_offset = 0
       for column in row.values():
@@ -105,12 +147,18 @@ class main_menu:
 
     # Render table
     return render_template("chassis_config.html",
-      wheelTable = wheelDisplayTable,
+      wheelTable = wheelTable,
       wheelOffset = wheelOffset,
       page_title = 'Chassis Configuraton')
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():
+    """
+    Return a JSON representation of current chassis wheel status. Use POST
+    instead of GET to clearify this data should not be cached.
+    Polled regularly by chassis_config.js to update onscreen display of
+    chassis_config.html.
+    """
     chassis.ensureready()
     wheelInfo = dict()
     for name, wheel in chassis.wheels.iteritems():
@@ -121,6 +169,10 @@ class main_menu:
 
   @app.route('/steering_trim', methods=['GET','POST'])
   def steering_trim():
+    """
+    Steering control motor can go off-center for various reasons. The steering
+    trim function allows the user to adjust the wheel center position.
+    """
     chassis.ensureready()
 
     if request.method == 'GET':
@@ -136,17 +188,17 @@ class main_menu:
         steered_wheels=steered_wheels,
         page_title = 'Steering Trim')
     else:
-      adjWheel = request.form['wheel']
+      adjWheel = chassis.wheels[request.form['wheel']]
 
       if "move_to" in request.form:
-        # Move to requested angle
-        chassis.steer_wheel(adjWheel, int(request.form['move_to']))
+        # Steer wheel to requested angle
+        adjWheel.steerto(int(request.form['move_to']))
 
-        return json.jsonify({'wheel':adjWheel, 'move_to':request.form['move_to']})
+        return json.jsonify({'wheel':adjWheel.name, 'move_to':request.form['move_to']})
       elif "set_zero" in request.form:
         # Accept the current steering angle as new zero
-        chassis.steer_setzero(adjWheel)
+        adjWheel.steersetzero()
 
-        return json.jsonify({'wheel':adjWheel, 'set_zero':request.form['set_zero']})
+        return json.jsonify({'wheel':adjWheel.name, 'set_zero':request.form['set_zero']})
       else:
         raise ValueError("Invalid POST parameters.")

@@ -78,7 +78,7 @@ class roverwheel:
     """
     self.steeringcontrol.angle(self.steeringparam, angle)
 
-  def setzero(self):
+  def steersetzero(self):
     """
     Set the current steering angle of this wheel as the new zero. Caller is
     responsible for validation of all parameters
@@ -161,38 +161,6 @@ class chassis:
 
     # Wheels are initialized, set everything to zero.
     self.move_velocity_radius(0)
-
-  def wheelDisplayTable(self):
-    """
-    Generate a table representing all the wheels for display in chassis 
-    configuraton menu
-    """
-    rows = set()
-    columns = set()
-
-    # Count the unique X/Y coordinates into columns/rows
-    for wheel in self.wheels.values():
-      rows.add(wheel.y)
-      columns.add(wheel.x)
-
-    # Sets enforced uniqueness, now we turn them into a list so we can sort.
-    rowlist = list(rows)
-    rowlist.sort(reverse=True)
-    columnlist = list(columns)
-    columnlist.sort()
-
-    # Create a dictionary of dicationaries to hold entries.
-    wheelTable = dict()
-    for row in rowlist:
-      wheelTable[row] = dict()
-      for column in columnlist:
-        wheelTable[row][column] = list()
-
-    # Put each wheel into its matching location in the table.
-    for wheel in self.wheels.values():
-      wheelTable[wheel.y][wheel.x].append(wheel)
-
-    return wheelTable
 
   def move_velocity_radius(self, velocity, radius=infinity):
     """
@@ -290,31 +258,3 @@ class chassis:
       return wheel.x
 
     return wheel.x + (wheel.y/math.tan(math.radians(angle)))
-
-  def steering_by_name(self, wheel_name):
-    """
-    Find a steerable wheel by the given name. Returns wheel reference if
-    found. If wheel is not found, or wheel is not steerable, will raise
-    ValueError.
-    """
-    if wheel_name not in self.wheels:
-      raise ValueError("Invalid wheel name")
-
-    namedWheel = self.wheels[wheel_name]
-
-    if namedWheel.steeringcontrol == None:
-      raise ValueError("Specified wheel may not be steered")
-
-    return namedWheel
-
-  def steer_wheel(self, wheel_name, angle):
-    """
-    Steer the named wheel to the specified angle
-    """
-    self.steering_by_name(wheel_name).steerto(angle)
-
-  def steer_setzero(self, wheel_name):
-    """
-    The named wheel's current steering angle is set as new zero position
-    """
-    self.steering_by_name(wheel_name).setzero()
