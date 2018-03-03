@@ -34,7 +34,7 @@ class configuration:
     goes well, returns a dictionary of configuration parameters.
     """
     filename = "config_"+self.name+".json"
-    filehandle = open(filename, 'r')    
+    filehandle = open(filename, 'r')
     filecontent = filehandle.read(32*1024) # Config files should be << 32kB
     filehandle.close()
 
