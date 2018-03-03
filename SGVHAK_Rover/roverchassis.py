@@ -68,12 +68,13 @@ class chassis:
     #  Values = velocity of wheel in the same unit given in currentMotion.
     self.velocity = dict()
 
-    # Each instance of this class represents one group of RoboClaw connected
-    # together on the same packet serial network. Up to eight addressible
-    # RoboClaws and two motors per controller = up to 16 motors. Since we
-    # have less than 16 motors to control at the moment, a single instance is
-    # sufficient.
-    self.rclaw = roboclaw_wrapper.roboclaw_wrapper()
+    # Dictionary that maps a wheel name to a tuple. First entry of the tuple
+    # is a reference to the rolling travel motor controller class, the second
+    # entry is the address ID to use for that controller.
+    self.rolling = dict()
+
+    # Similar to self.rolling, but for steering control motors.
+    self.steering = dict()
 
   def ensureready(self):
     """
@@ -83,19 +84,45 @@ class chassis:
     if len(self.wheels) > 0:
       return
 
-    if not self.rclaw.connected():
-      self.rclaw.connect()
+    # Each instance of this class represents one group of RoboClaw connected
+    # together on the same packet serial network. Up to eight addressible
+    # RoboClaws and two motors per controller = up to 16 motors. Since we
+    # have less than 16 motors to control at the moment, a single instance is
+    # sufficient.
+    rclaw = roboclaw_wrapper.roboclaw_wrapper()
+    rclaw.connect()
 
     config = configuration.configuration("roverchassis")
     self.wheels = config.load()
     for wheel in self.wheels:
+      name = wheel['name']
       steering = wheel['steering']
       if steering:
-        self.rclaw.init_angle(steering)
+        steeringtype = steering[0]
+        steeringparam = steering[1:]
+        steeringcontrol = None
+
+        if steeringtype == 'roboclaw':
+          steeringcontrol = rclaw
+        else:
+          raise ValueError("Unknown motor control type")
+
+        self.steering[name] = (steeringcontrol, steeringparam)
+        self.steering[name][0].init_angle(self.steering[name][1])
 
       rolling = wheel['rolling']
       if rolling:
-        self.rclaw.init_velocity(rolling)
+        rollingtype = rolling[0]
+        rollingparam = rolling[1:]
+        rollingcontrol = None
+
+        if rollingtype == 'roboclaw':
+          rollingcontrol = rclaw
+        else:
+          raise ValueError("Unknown motor control type")
+
+        self.rolling[name] = (rollingcontrol, rollingparam)
+        self.rolling[name][0].init_velocity(self.rolling[name][1])
 
     self.move_velocity_radius(0)
 
@@ -132,16 +159,16 @@ class chassis:
     """
     rctable = dict()
     for wheel in self.wheels:
+      name = wheel['name']
       try:
-        rollcontrol = wheel['rolling']
-        rollclaw = self.rclaw.version(rollcontrol)
+        rollclaw = self.rolling[name][0].version(self.rolling[name][1])
       except ValueError as ve:
         rollclaw = "(No Response)"
 
       steercontrol = wheel.get('steering', None)
       if steercontrol:
         try:
-          steerclaw = self.rclaw.version(steercontrol)
+          steerclaw = self.steering[name][0].version(self.steering[name][1])
         except ValueError as ve:
           steerclaw = "(No Response)"
       else:
@@ -227,11 +254,11 @@ class chassis:
 
       steering = wheel['steering']
       if steering:
-        self.rclaw.angle(steering, self.angles[name])
+        self.steering[name][0].angle(self.steering[name][1], self.angles[name])
 
       rolling = wheel['rolling']
       if rolling:
-        self.rclaw.velocity(rolling, self.velocity[name])
+        self.rolling[name][0].velocity(self.rolling[name][1], self.velocity[name])
 
   def radius_for(self, name, pct_angle):
     """
@@ -253,7 +280,7 @@ class chassis:
     if abs(pct_angle) > 100:
       raise ValueError("Steering wheel angle percentage {} exceeds 100".format(pct_angle))
 
-    angle = pct_angle * float(self.rclaw.maxangle()) / 100
+    angle = pct_angle * float(self.rolling[name][0].maxangle()) / 100
 
     if abs(angle) < 1:
       # Rounding off to straight ahead
@@ -290,11 +317,11 @@ class chassis:
     Steer the named wheel to the specified angle
     """
     adjust_wheel = self.steering_by_name(wheel_name)
-    self.rclaw.angle(adjust_wheel['steering'], angle)
+    self.steering[wheel_name][0].angle(self.steering[wheel_name][1], angle)
 
   def steer_setzero(self, wheel_name):
     """
     The named wheel's current steering angle is set as new zero position
     """
     zero_wheel = self.steering_by_name(wheel_name)
-    self.rclaw.steer_setzero(zero_wheel['steering'])
+    self.steering[wheel_name][0].steer_setzero(self.steering[wheel_name][1])

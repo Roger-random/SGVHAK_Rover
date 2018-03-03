@@ -2,11 +2,13 @@
   {
     "name": "front_left",
     "rolling": [
+      "roboclaw",
       128,
       2,
       false
     ],
     "steering": [
+      "roboclaw",
       131,
       2,
       false
@@ -17,11 +19,13 @@
   {
     "name": "front_right",
     "rolling": [
+      "roboclaw",
       128,
       1,
       false
     ],
     "steering": [
+      "roboclaw",
       131,
       1,
       false
@@ -32,6 +36,7 @@
   {
     "name": "mid_left",
     "rolling": [
+      "roboclaw",
       129,
       2,
       false
@@ -43,6 +48,7 @@
   {
     "name": "mid_right",
     "rolling": [
+      "roboclaw",
       129,
       1,
       false
@@ -54,11 +60,13 @@
   {
     "name": "rear_left",
     "rolling": [
+      "roboclaw",
       130,
       2,
       false
     ],
     "steering": [
+      "roboclaw",
       132,
       2,
       false
@@ -69,11 +77,13 @@
   {
     "name": "rear_right",
     "rolling": [
+      "roboclaw",
       130,
       1,
       false
     ],
     "steering": [
+      "roboclaw",
       132,
       1,
       false
