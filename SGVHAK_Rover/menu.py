@@ -98,45 +98,40 @@ class main_menu:
           for wheel in column:
             if cumulative_offset > 0:
               # Pick up the accumulated offset, reset accumulator to zero.
-              wheelOffset[wheel['name']] = "offset-m{}".format(cumulative_offset)
+              wheelOffset[wheel.name] = "offset-m{}".format(cumulative_offset)
               cumulative_offset = 0
             else:
-              wheelOffset[wheel['name']] = ""
+              wheelOffset[wheel.name] = ""
 
     # Render table
     return render_template("chassis_config.html",
       wheelTable = wheelDisplayTable,
       wheelOffset = wheelOffset,
-      velocity = chassis.velocity,
-      angles = chassis.angles,
-      roboclaw_table = chassis.roboclaw_table(),
       page_title = 'Chassis Configuraton')
 
   @app.route('/request_wheel_status', methods=['POST'])
   def request_wheel_status():
     chassis.ensureready()
     wheelInfo = dict()
-    for wheel in chassis.wheels:
-      name = wheel['name']
-      velocity = chassis.velocity[name]
-      angle = chassis.angles[name]
+    for name, wheel in chassis.wheels.iteritems():
       wheelInfo[name] = dict()
-      wheelInfo[name]['velocity'] = velocity
-      wheelInfo[name]['angle'] = angle
+      wheelInfo[name]['velocity'] = wheel.velocity
+      wheelInfo[name]['angle'] = wheel.angle
     return json.jsonify(wheelInfo)
 
   @app.route('/steering_trim', methods=['GET','POST'])
   def steering_trim():
     chassis.ensureready()
 
-    # Find all the wheels that we can steer
-    steered_wheels = list()
-    for wheel in chassis.wheels:
-      name = wheel['name']
-      if wheel['steering']:
-        steered_wheels.append(name)
-
     if request.method == 'GET':
+      # Find all the wheels that we can steer
+      steered_wheels = list()
+      for name, wheel in chassis.wheels.iteritems():
+        if wheel.steeringcontrol:
+          steered_wheels.append(name)
+      steered_wheels.sort()
+
+      # Pass the list of wheels along for display
       return render_template("steering_trim.html",
         steered_wheels=steered_wheels,
         page_title = 'Steering Trim')
@@ -144,10 +139,12 @@ class main_menu:
       adjWheel = request.form['wheel']
 
       if "move_to" in request.form:
+        # Move to requested angle
         chassis.steer_wheel(adjWheel, int(request.form['move_to']))
 
         return json.jsonify({'wheel':adjWheel, 'move_to':request.form['move_to']})
       elif "set_zero" in request.form:
+        # Accept the current steering angle as new zero
         chassis.steer_setzero(adjWheel)
 
         return json.jsonify({'wheel':adjWheel, 'set_zero':request.form['set_zero']})
