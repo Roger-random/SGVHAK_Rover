@@ -124,6 +124,25 @@ class chassis:
     #   Radius unit must match those used to specify wheel coordinates.
     self.currentMotion = (0, infinity)
 
+    # A dictionary mapping a name string identifying a motor controller type
+    #   to an instance of the motor controller.
+    self.motorcontrollers = dict()
+
+  def init_motorcontrollers(self):
+    """
+    Creates the dictionary where a name in the configuration file can be
+    matched with its corresponding motor controller.
+    """
+    try:
+      # Each instance of this class represents one group of RoboClaw connected
+      # together on the same packet serial network. Up to eight addressible
+      # RoboClaws and two motors per controller = up to 16 motors. 
+      rclaw = roboclaw_wrapper.roboclaw_wrapper()
+      rclaw.connect()
+      self.motorcontrollers['roboclaw'] = rclaw
+    except ValueError as ve:
+      Logger.error("Unable to initialize roboclaw: %s",str(ve))
+
   def ensureready(self):
     """
     Makes sure this chassis class is ready for work by ensuring the required
@@ -132,20 +151,15 @@ class chassis:
     if len(self.wheels) > 0:
       return
 
-    # Each instance of this class represents one group of RoboClaw connected
-    # together on the same packet serial network. Up to eight addressible
-    # RoboClaws and two motors per controller = up to 16 motors. Since we
-    # have less than 16 motors to control at the moment, a single instance is
-    # sufficient.
-    rclaw = roboclaw_wrapper.roboclaw_wrapper()
-    rclaw.connect()
+    # Initialize motor controller dictionary.
+    self.init_motorcontrollers()
 
+    # Load configuration from JSON.
     config = configuration.configuration("roverchassis")
     wheeljson = config.load()
 
+    # Using the data in configuration JSON file, create a wheel object.
     for wheel in wheeljson:
-      # Using the data in configuration JSON file, create a wheel object.
-
       # Retrieve name and verify uniqueness.
       name = wheel['name']
       if name in self.wheels:
@@ -157,23 +171,23 @@ class chassis:
       rollingcontrol = None
       rollingparam = None
 
-      # Rolling velocity motor control and associated parameters
+      # Fill in any rolling velocity motor control and associated parameters
       rolling = wheel['rolling']
       if rolling:
         rollingtype = rolling[0]
         rollingparam = rolling[1:]
-        if rollingtype == 'roboclaw':
-          rollingcontrol = rclaw
+        if rollingtype in self.motorcontrollers:
+          rollingcontrol = self.motorcontrollers[rollingtype]
         else:
           raise ValueError("Unknown motor control type")
 
-      # Steering angle motor control and associated parameters
+      # Fill in any steering angle motor control and associated parameters
       steering = wheel['steering']
       if steering:
         steeringtype = steering[0]
         steeringparam = steering[1:]
-        if steeringtype == 'roboclaw':
-          steeringcontrol = rclaw
+        if steeringtype in self.motorcontrollers:
+          steeringcontrol = self.motorcontrollers[steeringtype]
         else:
           raise ValueError("Unknown motor control type")
 
