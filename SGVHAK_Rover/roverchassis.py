@@ -36,17 +36,29 @@ class roverwheel:
   def __init__(self, name, x=0, y=0, rollingcontrol=None,rollingparam=None,
     steeringcontrol=None, steeringparam=None):
 
+    # String is used to identify this wheel in various operations. Bonus if
+    # the words make sense to a human reader ('front_left') but not required.
     self.name = name
+
+    # X,Y coordinate of this wheel on the rover chassis, relative to center.
     self.x = x
     self.y = y
+
+    # Rolling velocity motor (optional): a reference to the control object and
+    # the parameters to identify this wheel to the control.
     self.rollingcontrol = rollingcontrol
     self.rollingparam = rollingparam
+
+    # Steering angle motor (optiona): similar to the above, but for steering.
     self.steeringcontrol = steeringcontrol
     self.steeringparam = steeringparam
 
+    # The most recently commanded steering angle and rolling velocity
     self.angle = 0
     self.velocity = 0
 
+    # If we were given a rolling velocity control, run any initialization we
+    # need and obtain its label string to show to user.
     if self.rollingcontrol:
       self.rollingcontrol.init_velocity(self.rollingparam)
       try:
@@ -54,6 +66,7 @@ class roverwheel:
       except ValueError as ve:
         self.rollinglabel = "(No Response)"
 
+    # Repeat the above, this time for steering angle control.
     if self.steeringcontrol:
       self.steeringcontrol.init_angle(self.steeringparam)
       try:
@@ -132,12 +145,19 @@ class chassis:
 
     for wheel in wheeljson:
       # Using the data in configuration JSON file, create a wheel object.
+
+      # Retrieve name and verify uniqueness.
       name = wheel['name']
+      if name in self.wheels:
+        raise ValueError("Duplicate wheel name {} encountered.".format(name))
+
+      # Initialize all optional motor control values to None
       steeringcontrol = None
       steeringparam = None
       rollingcontrol = None
       rollingparam = None
 
+      # Rolling velocity motor control and associated parameters
       rolling = wheel['rolling']
       if rolling:
         rollingtype = rolling[0]
@@ -147,6 +167,7 @@ class chassis:
         else:
           raise ValueError("Unknown motor control type")
 
+      # Steering angle motor control and associated parameters
       steering = wheel['steering']
       if steering:
         steeringtype = steering[0]
@@ -156,6 +177,7 @@ class chassis:
         else:
           raise ValueError("Unknown motor control type")
 
+      # Add the newly created roverwheel object to wheels dictionary.
       self.wheels[name] = roverwheel(name, wheel['x'], wheel['y'],
         rollingcontrol, rollingparam, steeringcontrol, steeringparam)
 
