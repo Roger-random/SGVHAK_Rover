@@ -46,7 +46,8 @@ class main_menu:
     Stop motors immediately
     """
     chassis.ensureready()
-    chassis.move_velocity_radius(0)
+    for wheel in chassis.wheels.values():
+      wheel.poweroff()
     flash("Motors Stopped","success")
     return render_template("index.html")
 

@@ -22,11 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import random
-import serial
-import struct
-import time
-
 class Roboclaw_stub:
   """
   This class implements a subset of the full RoboClaw API released by
@@ -42,6 +37,12 @@ class Roboclaw_stub:
 
   def __init__(self):
     self.name = "TEST API"
+
+  def ForwardBackwardM1(self,address,val):
+    return True
+
+  def ForwardBackwardM2(self,address,val):
+    return True
 
   def SetEncM1(self,address,cnt):
     return True

@@ -74,6 +74,20 @@ class roverwheel:
       except ValueError as ve:
         self.steeringlabel = "(No Response)"
 
+  def poweroff(self):
+    """
+    Instructs the motor controller to stop rolling, stop holding position,
+    whatever is the least-effort situation. (If applicable)
+    """
+    self.velocity = 0
+    if self.rollingcontrol:
+      self.rollingcontrol.power_percent(self.rollingparam, 0)
+
+    # Killing the power leaves the angle wherever it was last (except as
+    # moved by external forces) so leave self.angle alone.
+    if self.steeringcontrol:
+      self.steeringcontrol.power_percent(self.steeringparam, 0)
+
   def anglevelocity(self):
     """
     Send the dictated angle and velocity to their respective controls

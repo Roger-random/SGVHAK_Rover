@@ -161,6 +161,27 @@ class roboclaw_wrapper:
 
     return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
 
+  def power_percent(self, id, percentage):
+    """
+    Instructs the specified motor to specified percentage of maximum power.
+    100 is full forward, -100 is full reverse, 0 cuts power.
+    """
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    pct = int(percentage)
+    if abs(pct) > 100:
+      raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
+
+    level = int(64 + (pct * 63)/100) # 0 is full reverse, 64 is stop, 127 is full forward.
+
+    error = "RoboClaw M{}@{} power at {} representing {} percent".format(motor, address, level, pct)
+
+    if motor==1:
+      apiset(self.roboclaw.ForwardBackwardM1(address,level), error)
+    else:
+      apiset(self.roboclaw.ForwardBackwardM2(address,level), error)
+
   def set_velocity_pid(self, id, params):
     """
     Configure the specified RoboClaw with the given velocity PID control parameters
@@ -194,7 +215,7 @@ class roboclaw_wrapper:
     address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
-    if abs(pct_velocity) > 100.1:
+    if abs(int(pct_velocity)) > 100:
       raise ValueError("Velocity percentage {} exceeds maximum of 100".format(pct_velocity))
 
     qpps = int(self.velocityparams['maxVelocity'] * pct_velocity / 100)
