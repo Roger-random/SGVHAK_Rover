@@ -23,21 +23,27 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
+<script type="text/javascript" src="{{url_for('static', filename='system_power.js')}}"></script>
 <div class="container">
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive by TouchPad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_command')}}">Drive by Angle/Velocity</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('system_power')}}">Shutdown/Reboot</a>
-  </div>
+<div class="row">
+  <form class="col s12" method="post" action="{{url_for('system_power')}}">
+    <div class="row">
+      Select Action
+    </div>
+    <div class="row">
+      <input name="power_command" type="radio" id="shutdown" value="shutdown" />
+      <label for="shutdown">Shutdown</label>
+    </div>
+    <div class="row">
+      <input name="power_command" type="radio" id="reboot" value="reboot"/>
+      <label for="reboot">Reboot</label>
+    </div>
+    <div class="row">
+      <a href="{{url_for('index')}}" class="waves-effect waves-light col offset-s1 s4 btn white blue-text">
+      Cancel</a>
+      <input type="submit" id="formsubmit" class="col offset-s2 s4 btn blue" value="OK" disabled/>
+    </div>
+  </form>
+</div>
 </div>
 {% endblock %}

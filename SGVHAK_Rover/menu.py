@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from subprocess import call
 from SGVHAK_Rover import app
-from flask import flash, json, render_template, request
+from flask import flash, json, redirect, render_template, request, url_for
 import roverchassis
 
 # Rover chassis geometry, including methods to calculate wheel angle and
@@ -203,3 +204,33 @@ class main_menu:
         return json.jsonify({'wheel':adjWheel.name, 'set_zero':request.form['set_zero']})
       else:
         raise ValueError("Invalid POST parameters.")
+
+  @app.route('/system_power', methods=['GET','POST'])
+  def system_power():
+    """
+    Allows an user to either reboot or shut the system down. Depends on the
+    ability to call out to system control ('systemctl') which may vary from
+    system to system. (Known to work on Raspberry Pi running Raspbian OS)
+    """
+    if request.method == 'GET':
+      return render_template("system_power.html",
+        page_title = 'System Power')
+    else:
+      action = request.form.get('power_command',None)
+
+      if action == "shutdown":
+        r = call("systemctl poweroff", shell=True)
+        if r == 0:
+          flash("Shutting down...", "success")
+        else:
+          flash("Shutdown attempt failed with error {0}".format(r), "error")
+      elif action == "reboot":
+        r = call("systemctl reboot", shell=True)
+        if r == 0:
+          flash("Rebooting...", "success")
+        else:
+          flash("Reboot attempt failed with error {0}".format(r), "error")
+      else:
+        flash("Invalid Action {}".format(action), "error")
+
+      return redirect(url_for('index'))
