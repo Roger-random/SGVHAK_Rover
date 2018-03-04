@@ -162,6 +162,9 @@ class roboclaw_wrapper:
     return apiget(self.roboclaw.ReadVersion(address), "RoboClaw ReadVersion @ {}".format(address))
 
   def set_velocity_pid(self, id, params):
+    """
+    Configure the specified RoboClaw with the given velocity PID control parameters
+    """
     address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
@@ -209,6 +212,9 @@ class roboclaw_wrapper:
       apiset(self.roboclaw.SpeedAccelM2(*args), error)
 
   def set_position_pid(self, id, params, limit):
+    """
+    Configure the specified RoboClaw with the given position PID control parameters
+    """
     address, motor, inverted = self.check_id(id)
     self.check_roboclaw()
 
