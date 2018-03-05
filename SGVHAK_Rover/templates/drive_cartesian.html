@@ -23,24 +23,9 @@ SOFTWARE.
 -->
 {% extends "layout.html" %}
 {% block body %}
-<div class="container">
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive via Polar (Round) Pad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_cartesian')}}">Drive via Cartesian (Rectangular) Pad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_command')}}">Drive by Angle/Velocity Command</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('system_power')}}">Shutdown/Reboot</a>
-  </div>
-</div>
+<script type="text/javascript" src="{{url_for('static', filename='drive_cartesian.js')}}"></script>
+<!-- default size chosen to be visible even on small phone screens -->
+<canvas id="controlPad" width="300" height="300">
+  <input type="hidden" id="command" value="{{url_for('drive_command')}}" />
+</canvas>
 {% endblock %}

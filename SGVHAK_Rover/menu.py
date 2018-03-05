@@ -55,12 +55,21 @@ class main_menu:
   @app.route('/drive')
   def drive():
     """
-    Drive by circular touchpad control
+    Drive by circular touchpad control for polar coordinates
     """
     chassis.ensureready()
     return render_template("drive.html", 
       ui_angle=70,
-      page_title = 'Drive by Touchpad')
+      page_title = 'Polar Pad')
+
+  @app.route('/drive_cartesian')
+  def drive_cartesian():
+    """
+    Drive by rectangular touchpad control for cartesian coordinates
+    """
+    chassis.ensureready()
+    return render_template("drive_cartesian.html", 
+      page_title = 'Cartesian Pad')
 
   @app.route('/drive_command', methods=['GET','POST'])
   def drive_command():
