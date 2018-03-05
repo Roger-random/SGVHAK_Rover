@@ -85,6 +85,8 @@ class adafruit_servo_wrapper:
     i2caddr = allparams['address']
     self.pwm = Adafruit_PCA9685.PCA9685(address=i2caddr, busnum=i2cbus)
 
+    self.pwm.set_pwm_freq(allparams['pwm_freq'])
+
   def version(self, id):
     """ 
     Returns a version string for display - the servo HAT doesn't really have

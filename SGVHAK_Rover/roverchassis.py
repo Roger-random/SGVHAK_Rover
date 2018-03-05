@@ -24,6 +24,7 @@ SOFTWARE.
 import math
 import configuration
 import roboclaw_wrapper
+import adafruit_servo_wrapper
 
 # Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
 infinity = float("inf")
@@ -157,6 +158,13 @@ class chassis:
     except ValueError as ve:
       Logger.error("Unable to initialize roboclaw: %s",str(ve))
 
+    try:
+      asw = adafruit_servo_wrapper.adafruit_servo_wrapper()
+      asw.connect()
+      self.motorcontrollers['adafruit_servo'] = asw
+    except Error as e:
+      Logger.error("Unable to initialize Adafruit Servo HAT library: %s",str(e))
+
   def ensureready(self):
     """
     Makes sure this chassis class is ready for work by ensuring the required
@@ -189,7 +197,10 @@ class chassis:
       rolling = wheel['rolling']
       if rolling:
         rollingtype = rolling[0]
-        rollingparam = rolling[1:]
+        if len(rolling) == 2:
+          rollingparam = rolling[1]
+        else:
+          rollingparam = rolling[1:]
         if rollingtype in self.motorcontrollers:
           rollingcontrol = self.motorcontrollers[rollingtype]
         else:
@@ -199,7 +210,10 @@ class chassis:
       steering = wheel['steering']
       if steering:
         steeringtype = steering[0]
-        steeringparam = steering[1:]
+        if len(steering) == 2:
+          steeringparam = steering[1]
+        else:
+          steeringparam = steering[1:]
         if steeringtype in self.motorcontrollers:
           steeringcontrol = self.motorcontrollers[steeringtype]
         else:
