@@ -297,7 +297,9 @@ class chassis:
 
     wheel = self.wheels[name]
 
-    angle = pct_angle * float(wheel.rollingcontrol.maxangle()) / 100
+    # Maximum angle pulled from the control class is subtracted by 1.5 degree
+    # for a bit of margin against the hard end stop.
+    angle = pct_angle * float(wheel.rollingcontrol.maxangle(wheel.rollingparam)-1.5) / 100
 
     if abs(angle) < 1:
       # Rounding off to straight ahead

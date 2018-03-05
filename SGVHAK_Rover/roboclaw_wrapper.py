@@ -79,8 +79,8 @@ class roboclaw_wrapper:
   @staticmethod
   def check_id(id):
     """
-    Verifies that a given perameter is correct formatted id tuple for this class.
-    * Check that it is indeed a tuple with three elements.
+    Verifies that a given perameter is correct formatted for this class.
+    * Check that it is has three elements.
     * Check that the first element is an integer in valid range of RoboClaw
       addresses. 128 <= X <= 135
       NOTE: Does not check if there's actually a RoboClaw at that address.
@@ -119,7 +119,7 @@ class roboclaw_wrapper:
     Check to make sure we've already connected to a RoboClaw. This should be
     called before every RoboClaw command.
     """
-    if not self.connected():
+    if self.roboclaw == None:
       raise ValueError("RoboClaw not yet connected")
 
   def connect(self):
@@ -149,10 +149,6 @@ class roboclaw_wrapper:
         self.roboclaw = newrc
       else:
         raise ValueError("Could not connect to RoboClaw. {} @ {}".format(portname, baudrate))
-
-  def connected(self):
-    """Returns True if we have connected Roboclaw API to a serial port"""
-    return self.roboclaw != None
 
   def version(self, id):
     """Returns a version string for display"""
@@ -261,12 +257,12 @@ class roboclaw_wrapper:
     self.set_velocity_pid(id, p['velocity'])
     self.set_position_pid(id, p['position'], p['hardstop']['count'])
 
-  def maxangle(self):
+  def maxangle(self, id):
     """
-    Returns the maximum angle callers should use for their calculation.
-    Take the absolute end stop and subtract a little bit of margin.
+    Returns the maximum steering angle. Callers should subtract a small margin
+    for use in their calculation.
     """
-    return self.angleparams['hardstop']['angle']-1.5
+    return self.angleparams['hardstop']['angle']
 
   def angle(self, id, angle):
     """
