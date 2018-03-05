@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import math
+import logging
 import configuration
 import roboclaw_wrapper
 import adafruit_servo_wrapper
@@ -156,14 +157,14 @@ class chassis:
       rclaw.connect()
       self.motorcontrollers['roboclaw'] = rclaw
     except ValueError as ve:
-      Logger.error("Unable to initialize roboclaw: %s",str(ve))
+      logging.getLogger(__name__).error("Unable to initialize roboclaw: %s",str(ve))
 
     try:
       asw = adafruit_servo_wrapper.adafruit_servo_wrapper()
       asw.connect()
       self.motorcontrollers['adafruit_servo'] = asw
-    except Error as e:
-      Logger.error("Unable to initialize Adafruit Servo HAT library: %s",str(e))
+    except StandardError as se:
+      logging.getLogger(__name__).error("Unable to initialize Adafruit Servo HAT library: %s",str(se))
 
   def ensureready(self):
     """
