@@ -34,3 +34,18 @@ flask run --host=0.0.0.0 &
 ```
 - Configure Pi to be a wireless access point by following instructions at https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
 - Once complete, connect to the new Pi-hosted wireless access point and open a web browser (default URL is `http://192.168.4.1:5000`) to use rover UI.
+
+Overview
+---
+
+This project was implemented to control a six-wheeled rover with kinematics similar to rovers NASA JPL sent to Mars.
+This meant we need to control the relative velocities of its six driven wheels and the steering angles for each of the four corner steerable wheels. This calculation is the core of the project, and can be found in `roverchassis.py`.
+
+After the calculations have been made, their results can be sent to one of several motor control control module that will drive the actual mechanical parts. This implementation has the following motor control module implementations to match hardware installed on the rover:
+
+1. A low-cost low-end servo motor solution controlled with the [Adafruit PWM HAT](https://learn.adafruit.com/adafruit-16-channel-pwm-servo-hat-for-raspberry-pi). Adafruit provides a Python library which is wrapped via `adafruit_servo_wrapper.py`.
+2. A midrange solution with brushed DC motor matched with a quadrature encoder for closed-loop feedback. Controlled via [Ion Motion Control's RoboClaw](http://www.ionmc.com/Standard_c_18.html) modules. Ion Motion Control likewise provides a Python library, which is wrapped via `roboclaw_wrapper.py`.
+3. For testing purposes, a nonoperative solution that serves as placeholder when running on a system that has none of the above controllers installed. All operations return success code with no actual effect. This is implemented by `roboclaw_wrapper.py` calling into `roboclaw_stub.py` instead of the actual RoboClaw Python API.
+
+The HTML/CSS/JavaScript files in this project present the user interface for driving this rover. The HTML menu system is centralized in `menu.py` and the root menu is in `index.html`. The flexibility of HTML allows quick experimentation for different methods to present a rover user interface to the user. Several experimental UI are included and they all use the common `move_velocity_radius` API of `roverchassis.py`.
+
