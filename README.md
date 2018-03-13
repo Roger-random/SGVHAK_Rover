@@ -49,3 +49,34 @@ After the calculations have been made, their results can be sent to one of sever
 
 The HTML/CSS/JavaScript files in this project present the user interface for driving this rover. The HTML menu system is centralized in `menu.py` and the root menu is in `index.html`. The flexibility of HTML allows quick experimentation for different methods to present a rover user interface to the user. Several experimental UI are included and they all use the common `move_velocity_radius` API of `roverchassis.py`.
 
+
+Configurations and Modifications
+---
+**Physical Geometry**
+`roverchassis.py` requires knowing the physical layout of rover's wheels in order to properly calculate velocity and angle. Physical layout is described by specifying each wheel's (x,y) coordinate inside `config_roverchassis.json`. The coordinate system used is: Looking down on the rover from above, the front of the rover is the +Y axis and the right side of the rover is the +X axis. The center of the rover is the origin. The example length values in the repository are in inches, but any unit (either metric or imperial) may be used as long as they are used consistently. Since `roverchassis.py` calculations are made on their relative ratios.
+
+**Wheel Control**
+Aside from physical geometry, `config_roverchassis.json` also specifies two motor controlls for each wheel. One for the rolling travel motion, and the other for steering control.
+* A freely rolling, undriven wheel will have `null` as its rolling control.
+* A wheel that has no steering motor will have `null` as its steering control.
+* It is valid to have a wheel that has `null` for both values. For example, a caster wheel.
+
+**RoboClaw Parameters**
+When RoboClaw controller is used, relevant parameters must be present in `config_roboclaw.json`. See Ion Motion Control's RoboClaw documentation for details.
+* Connection parameters: serial port, baudrate, etc.
+* Velocity PID values must be present if RoboClaw is controlling any rolling travel motors.
+* Position PID values must be present if RoboClaw is controlling any steering motors.
+
+**Adafruit Servo HAT Parameters**
+When Adafruit PWM HAT is used, relevant parameters must be present in `config_adafruit_servo.json`.
+* Connection parameters: I2C address, I2C bus, PWM frequency.
+* The following parameter for each of 16 servo addresses:
+  * PWM value for center position.
+  * Maximum travel range, expressed in degrees off center.
+  * PWM value for the maximum positive travel. (Minimum is assumed symmetric and will be calculated from other parameters.)
+
+**UI Replacement** 
+The web-based UI (HTML/CSS/JavaScript served by Flask) can be completely replaced by another system if desired. One example is to use a gaming controller communicating over Bluetooth. This Bluetooth communication module can call `move_velocity_radius` API on `roverchassis.py` to utilize all the same code calculating velocity/angle and sending them to the motor controllers.
+
+**Additional Motor Controllers**
+Other motor control classes may be added as peers of `roboclaw_wrapper.py` and `adafruit_servo_wrapper.py`. The new motor control module must be initialized in `roverchassis.py` method `init_motorcontrollers()`. Then its name may be used in `config_roverchassis.json` to specify its usage as wheel rolling or steering control.
