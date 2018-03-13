@@ -18,7 +18,8 @@ Written under `python 2.7.14` with associated `pip 9.0.1`
 - Activate virtual environment `. venv/bin/activate`. Prompt should now be prepended with `(venv)`
   
 ### Install dependencies
-- All dependencies are described in setup.py and can be installed with `pip install -e .`
+- All Python dependencies are described in setup.py and can be installed with `pip install -e .`
+- All HTML related dependencies are copied in the `\static\` subdirectory and no installation is necessary. Because the HTML UI is served up from the Raspberry Pi 3 acting as an access point without actual internet connectivity, we could not ask the user's web browser to download [jQuery](https://jquery.com/) and [Materialize](http://materializecss.com/). Instead, we have a local copy to serve up for use.
 
 ### Start Flask
 - `export FLASK_APP=SGVHAK_Rover`
