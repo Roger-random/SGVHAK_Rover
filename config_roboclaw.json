@@ -6,6 +6,7 @@
       "angle": 45,
       "count": 426
     },
+    "maxCurrent" : 100,
     "position": {
       "d": 500,
       "deadzone": 1,
@@ -29,6 +30,7 @@
   },
   "velocity": {
     "acceleration": 7500,
+    "maxCurrent" : 100,
     "maxVelocity": 6000,
     "minVelocity": 300,
     "velocity": {

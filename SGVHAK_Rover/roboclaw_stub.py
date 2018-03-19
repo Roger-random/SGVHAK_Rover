@@ -80,5 +80,11 @@ class Roboclaw_stub:
   def ReadVersion(self,address):
     return (1, self.name)
 
+  def SetM1MaxCurrent(self,address,max):
+    return True
+
+  def SetM2MaxCurrent(self,address,max):
+    return True
+
   def Open(self):
     return 1

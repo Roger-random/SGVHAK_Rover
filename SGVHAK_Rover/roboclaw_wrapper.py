@@ -178,6 +178,20 @@ class roboclaw_wrapper:
     else:
       apiset(self.roboclaw.ForwardBackwardM2(address,level), error)
 
+  def set_max_current(self, id, current):
+    """
+    Restrict the specified motor's maximum allowed amperage draw.
+    """
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    error = "Restricting RoboClaw M{}@{} to {} * 10 mA".format(motor,address,current)
+
+    if motor==1:
+      apiset(self.roboclaw.SetM1MaxCurrent(address, current))
+    else:
+      apiset(self.roboclaw.SetM2MaxCurrent(address, current))
+
   def set_velocity_pid(self, id, params):
     """
     Configure the specified RoboClaw with the given velocity PID control parameters
@@ -201,6 +215,7 @@ class roboclaw_wrapper:
     """
     Initializes the identified motor for wheel rolling control
     """
+    self.set_max_current(id, self.velocityparams['maxCurrent'])
     self.set_velocity_pid(id, self.velocityparams['velocity'])
 
   def velocity(self, id, pct_velocity):
@@ -254,6 +269,7 @@ class roboclaw_wrapper:
     Initializes the identified motor for wheel steering control
     """
     p = self.angleparams
+    self.set_max_current(id, p['maxCurrent'])
     self.set_velocity_pid(id, p['velocity'])
     self.set_position_pid(id, p['position'], p['hardstop']['count'])
 
