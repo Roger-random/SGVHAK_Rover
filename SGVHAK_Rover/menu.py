@@ -58,7 +58,7 @@ class main_menu:
     Drive by circular touchpad control for polar coordinates
     """
     chassis.ensureready()
-    return render_template("drive.html", 
+    return render_template("drive.html",
       ui_angle=70,
       page_title = 'Polar Pad')
 
@@ -68,7 +68,7 @@ class main_menu:
     Drive by rectangular touchpad control for cartesian coordinates
     """
     chassis.ensureready()
-    return render_template("drive_cartesian.html", 
+    return render_template("drive_cartesian.html",
       page_title = 'Cartesian Pad')
 
   @app.route('/drive_command', methods=['GET','POST'])
@@ -243,3 +243,19 @@ class main_menu:
         flash("Invalid Action {}".format(action), "error")
 
       return redirect(url_for('index'))
+
+  @app.route('/input_voltage')
+  def input_voltage():
+    """
+    Most motor controllers report their battery input voltage. Retrieve and
+    display this information for the user.
+    """
+    chassis.ensureready()
+    voltages = dict()
+
+    for name,wheel in chassis.wheels.iteritems():
+      voltages[name] = wheel.motor_voltage()
+
+    return render_template("input_voltage.html",
+      voltages = voltages,
+      page_title = "Input Voltage")

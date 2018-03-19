@@ -88,7 +88,7 @@ class adafruit_servo_wrapper:
     self.pwm.set_pwm_freq(allparams['pwm_freq'])
 
   def version(self, id):
-    """ 
+    """
     Returns a version string for display - the servo HAT doesn't really have
     anything unique to return so we're just going to display a fixed string
     """
@@ -174,3 +174,9 @@ class adafruit_servo_wrapper:
     Sets the current servo angle to the new zero.
     """
     raise NotImplementedError("Steering servo trim not implemented yet")
+
+  def input_voltage(self, id):
+    """
+    Read the input voltage available to drive specified motor.
+    """
+    return "Not Available"

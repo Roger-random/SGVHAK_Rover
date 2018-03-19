@@ -70,7 +70,7 @@ class roboclaw_wrapper:
   Goal: Make this class safe to call from multiple threads.
     Option 1: Only allow commands from one thread, reject commands from others.
     Option 2: Allow commands from all threads, serialize them so only one is
-              executed at a time. 
+              executed at a time.
   """
 
   def __init__(self):
@@ -309,3 +309,16 @@ class roboclaw_wrapper:
       apiset(self.roboclaw.SetEncM1(*args), error)
     else:
       apiset(self.roboclaw.SetEncM2(*args), error)
+
+  def input_voltage(self, id):
+    """
+    Read the input voltage available to drive specified motor
+    """
+    address, motor, inverted = self.check_id(id)
+    self.check_roboclaw()
+
+    error = "Read voltage of RoboClaw @{}".format(address)
+
+    voltage10 = apiget(self.roboclaw.ReadMainBatteryVoltage(address))
+
+    return voltage10 / 10.0

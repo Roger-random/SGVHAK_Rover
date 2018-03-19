@@ -50,6 +50,9 @@ class Roboclaw_stub:
   def SetEncM2(self,address,cnt):
     return True
 
+  def ReadMainBatteryVoltage(self,address):
+    return (True, 123)
+
   def SetM1VelocityPID(self,address,p,i,d,qpps):
     return True
 

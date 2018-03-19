@@ -24,26 +24,12 @@ SOFTWARE.
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive')}}">Drive via Polar (Round) Pad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_cartesian')}}">Drive via Cartesian (Rectangular) Pad</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('drive_command')}}">Drive by Angle/Velocity Command</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('chassis_config')}}">Chassis Configuraton</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('steering_trim')}}">Steering Trim</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('input_voltage')}}">Motor Input Voltages</a>
-  </div>
-  <div class="row">
-    <a class="waves-effect waves-light btn col offset-s1 s10 blue" href="{{url_for('system_power')}}">Shutdown/Reboot</a>
-  </div>
+{% for name,voltage in voltages.iteritems() %}
+<div class="row">
+  {{name}} /
+  Roll {{ voltage['Rolling'] }} /
+  Steer {{ voltage['Steering'] }}
 </div>
+{% endfor %}
+</div><!-- container -->
 {% endblock %}

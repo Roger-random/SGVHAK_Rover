@@ -114,8 +114,27 @@ class roverwheel:
     """
     self.steeringcontrol.steer_setzero(self.steeringparam)
 
+  def motor_voltage(self):
+    """
+    Query the rolling and steering motor controllers for their current input
+    voltage levels
+    """
+    voltages = dict()
+
+    if self.rollingcontrol:
+      voltages["Rolling"] = self.rollingcontrol.input_voltage(self.rollingparam)
+    else:
+      voltages["Rolling"] = "Not Applicable"
+
+    if self.steeringcontrol:
+      voltages["Steering"] = self.steeringcontrol.input_voltage(self.steeringparam)
+    else:
+      voltages["Steering"] = "Not Applicable"
+
+    return voltages
+
 class chassis:
-  """ 
+  """
   Rover chassis class tracks the physical geometry of the chassis and uses
   that informaton to calculate Ackerman steering angles and relative
   velocity for wheel travel
@@ -152,7 +171,7 @@ class chassis:
     try:
       # Each instance of this class represents one group of RoboClaw connected
       # together on the same packet serial network. Up to eight addressible
-      # RoboClaws and two motors per controller = up to 16 motors. 
+      # RoboClaws and two motors per controller = up to 16 motors.
       rclaw = roboclaw_wrapper.roboclaw_wrapper()
       rclaw.connect()
       self.motorcontrollers['roboclaw'] = rclaw
