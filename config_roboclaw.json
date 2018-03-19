@@ -4,7 +4,7 @@
     "decel": 7500,
     "hardstop": {
       "angle": 45,
-      "count": 1362
+      "count": 426
     },
     "position": {
       "d": 500,
