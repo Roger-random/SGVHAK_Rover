@@ -90,12 +90,21 @@ class main_menu:
       pct_angle = float(request.form['pct_angle'])
       magnitude = float(request.form['magnitude'])
 
-      # TODO: Find a more general way to do this math rather than hard-coding
-      # wheel names.
-      if pct_angle >= 0:
-        radius = chassis.radius_for('front_right', pct_angle)
+      if len(chassis.wheels) == 2:
+        # Presumably two-wheel differential drive
+        if pct_angle == 0:
+          radius = float("inf")
+        elif pct_angle>0:
+          radius = chassis.minRadius + (chassis.maxRadius-chassis.minRadius) * (100-pct_angle)/100.0
+        else:
+          radius = -chassis.minRadius - (chassis.maxRadius-chassis.minRadius) * (100+pct_angle)/100.0
       else:
-        radius = chassis.radius_for('front_left', pct_angle)
+        # TODO: Find a more general way to do this math rather than hard-coding
+        # wheel names.
+        if pct_angle >= 0:
+          radius = chassis.radius_for('front_right', pct_angle)
+        else:
+          radius = chassis.radius_for('front_left', pct_angle)
 
       chassis.move_velocity_radius(magnitude, radius)
 
