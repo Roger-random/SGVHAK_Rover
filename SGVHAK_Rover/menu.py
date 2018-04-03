@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from subprocess import call
+import socket
 from SGVHAK_Rover import app
 from flask import flash, json, redirect, render_template, request, url_for
 import roverchassis
@@ -165,10 +166,24 @@ class main_menu:
             else:
               wheelOffset[wheel.name] = ""
 
+    # Get local IP address, copy/pasted from StackOverflow
+    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    IP = 'unknown'
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = 'Exception encountered while retrieving IP address'
+    finally:
+        s.close()
+
     # Render table
     return render_template("chassis_config.html",
       wheelTable = wheelTable,
       wheelOffset = wheelOffset,
+      local_ip = IP,
       page_title = 'Chassis Configuraton')
 
   @app.route('/request_wheel_status', methods=['POST'])
