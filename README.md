@@ -6,6 +6,8 @@ The source code is intended to be easy for others to understand and tinker with.
 * Not robust against unreliability network. (Noisy WiFi environments.)
 * Not secured against hostile network attackers.
 
+And most of all: __*no multithreading*__. Threading is very easy to get wrong, causing problems that are difficult to debug. Since this project is intended to be easy for aspiring robot programmers to pick up and play with, using multiple threads would raise the barrier to entry significantly. Admittedly, avoiding multithreading does limit the features we can implement with this software. But anyone who outgrows the capabilities of this software package hopefully will also be ready to move on to a different robot software platform. (Related note: Though the underlying Flask web platform is capable of multi-thread and multi-process, it will only run as a single thread in a single process when running in development server mode as per instructions below.)
+
 Setup for development & testing
 ---
 Written under `python 2.7.14` with associated `pip 9.0.1`
