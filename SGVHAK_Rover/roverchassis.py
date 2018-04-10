@@ -347,6 +347,8 @@ class chassis:
       limit_min = wheel_x_max * 0.01
       limit_max = wheel_x_max * 10
 
+    # Initial values established, now let's look at each wheel and calculate
+    # its relative min/max and compare against initial values.
     for wheel in self.wheels.values():
       if wheel.steeringcontrol:
         angle_max = wheel.steeringcontrol.maxangle(wheel.steeringparam)
@@ -354,7 +356,9 @@ class chassis:
           limit_radius = wheel.x + (wheel.y/math.tan(math.radians(angle_max)))
           if limit_radius > limit_min:
             limit_min = limit_radius
-          limit_radius = wheel.x + (wheel.y/math.tan(math.radians(3)))
+          # If the rover uses steering mechanism that can be more precise than
+          # +/- one degree, decrease the value accordingly.
+          limit_radius = wheel.x + (wheel.y/math.tan(math.radians(1)))
           if abs(limit_radius) < limit_max:
             limit_max = abs(limit_radius)
 
