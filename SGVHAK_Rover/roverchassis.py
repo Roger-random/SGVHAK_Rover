@@ -298,6 +298,12 @@ class chassis:
         else:
           wheel.velocity = velocity * hyp/abs(radius)
 
+        # If center of rotation is within the wheel track, and between the
+        # wheel and the origin, then this wheel will need to turn in the
+        # opposite direction so the rover body can turn about the center.
+        if (radius < 0 and wheel.x < 0 and wheel.x < radius) or (radius > 0 and wheel.x > 0 and wheel.x > radius):
+          wheel.velocity = -wheel.velocity
+
     # Go back and normalize al the wheel roll rate magnitude so they are at or
     # below target velocity while maintaining relative ratios between their rates.
     maxCalculated = 0
@@ -327,9 +333,19 @@ class chassis:
     of the wheels and calculate the minimum turning radius. Also look at the
     radius when the wheels are turned a single degree and use that as maximum
     turning radius.
+
+    Initial values are established by first finding the wheel with the
+    greatest X distance from center. Minimum radius is 1% of its distance, and
+    maximum is 10 times (1000%) of the distance.
     """
-    limit_min = 0
-    limit_max = infinity
+    wheel_x_max = 0
+    for wheel in self.wheels.values():
+      if abs(wheel.x) > wheel_x_max:
+        wheel_x_max = abs(wheel.x)
+
+    if wheel_x_max > 0:
+      limit_min = wheel_x_max * 0.01
+      limit_max = wheel_x_max * 10
 
     for wheel in self.wheels.values():
       if wheel.steeringcontrol:
