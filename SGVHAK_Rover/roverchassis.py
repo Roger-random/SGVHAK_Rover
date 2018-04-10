@@ -146,12 +146,16 @@ class chassis:
     self.wheels = dict()
 
     # When turning radius grows beyond this point, the wheel angles are so
-    #   miniscule it is indistinguishable from straight line travel.
-    self.maxRadius = 250 # TODO: calculate based on chassis configuration.
+    #   miniscule it is indistinguishable from straight line travel. This hard
+    #   coded default can be updated based on chassis config by calling
+    #   calculate_radius_min_max()
+    self.maxRadius = 250
 
     # Radius representing the tightest turn this chassis can make. Minimum
     #   value of zero indicates chassis is capable of turning in place.
-    self.minRadius = 17.75 # TODO: calculate based on chassis configuration.
+    #   This hard coded default value can be updated based on chassis config by
+    #   calling calculate_radius_min_max()
+    self.minRadius = 17.75
 
     # The current (velocity, radius) that dictated wheel angle and velocity.
     #   Velocity unit is up to the caller, math works regardless of units
@@ -243,6 +247,9 @@ class chassis:
       self.wheels[name] = roverwheel(name, wheel['x'], wheel['y'],
         rollingcontrol, rollingparam, steeringcontrol, steeringparam)
 
+    # Update radius min/max based on the rover chassis configuration info
+    self.calculate_radius_min_max()
+
     # Wheels are initialized, set everything to zero.
     self.move_velocity_radius(0)
 
@@ -314,33 +321,26 @@ class chassis:
     for wheel in self.wheels.values():
       wheel.anglevelocity()
 
-  def radius_for(self, name, pct_angle):
+  def calculate_radius_min_max(self):
     """
-    Given the name of a wheel and the steering angle of that wheel, calculate
-    the radius of the resulting rover path. This is useful when determining
-    minimum turning radius.
-    Angle is described in percentage range of the maximum steering angle, in
-    range of -100 to 100, positive clockwise. (Angle 100 = full right turn.)
+    Once the wheel configuraton has been loaded, read maximum turning ability
+    of the wheels and calculate the minimum turning radius. Also look at the
+    radius when the wheels are turned a single degree and use that as maximum
+    turning radius.
     """
+    limit_min = 0
+    limit_max = infinity
 
-    if name not in self.wheels:
-      raise ValueError("Could not find wheel {} to calculate radius for steering at {} percent of maximum angle.".format(name, pct_angle))
+    for wheel in self.wheels.values():
+      if wheel.steeringcontrol:
+        angle_max = wheel.steeringcontrol.maxangle(wheel.steeringparam)
+        if angle_max < 90:
+          limit_radius = wheel.x + (wheel.y/math.tan(math.radians(angle_max)))
+          if limit_radius > limit_min:
+            limit_min = limit_radius
+          limit_radius = wheel.x + (wheel.y/math.tan(math.radians(3)))
+          if abs(limit_radius) < limit_max:
+            limit_max = abs(limit_radius)
 
-    if abs(pct_angle) > 100:
-      raise ValueError("Steering wheel angle percentage {} exceeds 100".format(pct_angle))
-
-    wheel = self.wheels[name]
-
-    # Maximum angle pulled from the control class is subtracted by 1.5 degree
-    # for a bit of margin against the hard end stop.
-    angle = pct_angle * float(wheel.rollingcontrol.maxangle(wheel.rollingparam)-1.5) / 100
-
-    if abs(angle) < 1:
-      # Rounding off to straight ahead
-      return infinity
-
-    if abs(angle) > 89:
-      # Rounding off to right angle
-      return wheel.x
-
-    return wheel.x + (wheel.y/math.tan(math.radians(angle)))
+    self.minRadius = limit_min
+    self.maxRadius = limit_max
