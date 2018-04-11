@@ -31,13 +31,6 @@ def bytetohex(bytearray):
   """
   return ''.join('{:02x}'.format(x) for x in bytearray)
 
-def prints(s):
-  """
-  print shim is a basic way to bridge the silliest difference between python 2 and 3 code.
-  """
-  print s  # Use for Python 2
-  # print(s) # Use for Python 3
-
 class lewansoul_wrapper:
   """
   Class that implements the rover motor control methods for serial bus
@@ -95,7 +88,7 @@ class lewansoul_wrapper:
     packet.append(checksum)
 
     packet_bytes = bytearray(packet)
-    # prints("Sending command byte stream of {}".format(bytetohex(packet_bytes)))
+    # print("Sending command byte stream of {}".format(bytetohex(packet_bytes)))
     self.sp.write(packet_bytes)
 
   def read_raw(self, length=100):
@@ -186,34 +179,34 @@ if __name__ == "__main__":
   c.connect()
 
   if args.queryid:
-    prints("Broadcasting servo ID query")
+    print("Broadcasting servo ID query")
     c.send(0xfe, 14) # Broadcast and ask to report ID
     (sid, cmd, params) = c.read_parsed(length=7, expectedcmd=14, expectedparams=1)
     if sid != params[0]:
       raise ValueError("ID response stamped with {} but payload says {}".format(sid, params[0]))
-    prints("Servo ID {} responded to query".format(sid))
+    print("Servo ID {} responded to query".format(sid))
   elif args.rename:
-    prints("Checking the specified servo ID {} is on the serial network.".format(args.id))
+    print("Checking the specified servo ID {} is on the serial network.".format(args.id))
     c.send(args.id, 14) # Ask for current servo ID
     (sid, cmd, params) = c.read_parsed(length=7, expectedcmd=14, expectedparams=1)
     if sid != args.id or params[0] != args.id:
-      printed("Unexpected answer from servo {} when verifying servo {} is on the network.".format(sid, args.id))
+      print("Unexpected answer from servo {} when verifying servo {} is on the network.".format(sid, args.id))
     else:
-      prints("Checking the specified destination servo ID {} is not already taken.".format(args.rename))
+      print("Checking the specified destination servo ID {} is not already taken.".format(args.rename))
       c.send(args.rename, 14)
       expectempty=c.read_raw()
       if len(expectempty) > 0:
         raise ValueError("Someone answers to servo ID {} on the network, rename aborted.".format(args.rename))
       else:
-        prints("Renaming servo ID {} to {}".format(args.id, args.rename))
+        print("Renaming servo ID {} to {}".format(args.id, args.rename))
         c.send(args.id, 13, (args.rename,))
-        prints("Verifying the servo now answers to new ID")
+        print("Verifying the servo now answers to new ID")
         c.send(args.rename, 14)
         (sid, cmd, params) = c.read_parsed(length=7, expectedcmd=14, expectedparams=1)
         if sid != args.rename or sid != params[0]:
-          prints("Querying for response from ID {} failed, we got answer from ID {}/{} instead.".format(args.rename, sid, params[0]))
+          print("Querying for response from ID {} failed, we got answer from ID {}/{} instead.".format(args.rename, sid, params[0]))
         else:
-          prints("Servo successfully renamed to ID {}".format(args.rename))
+          print("Servo successfully renamed to ID {}".format(args.rename))
   else:
     # None of the actions were specified? Show help screen.
     parser.print_help()
