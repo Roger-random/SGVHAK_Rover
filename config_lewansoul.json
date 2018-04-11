@@ -1,0 +1,7 @@
+{
+  "connect": {
+    "baudrate": 115200,
+    "port": "/dev/ttyUSB0",
+    "timeout": 0.5
+  }
+}

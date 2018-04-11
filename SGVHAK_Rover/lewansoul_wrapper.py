@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import serial
+from struct import *
+
+import configuration
 
 def bytetohex(bytearray):
   """
@@ -44,22 +47,39 @@ class lewansoul_wrapper:
     if self.sp == None:
       raise ValueError("LewanSoul serial communication is not available.")
 
-  def connect(self, port="/dev/ttyUSB0", baudrate=115200, timeout=0.5):
+  def connect(self):
+    """
+    Read serial port connection parameters from JSON configuration file
+    and open the port.
+    """
+
+    # Read parameter file
+    config = configuration.configuration("lewansoul")
+    connectparams = config.load()['connect']
+
+    # Open serial port with parameters
     s = serial.Serial()
-    s.baudrate = baudrate
-    s.port = port
-    s.timeout = timeout
+    s.baudrate = connectparams['baudrate']
+    s.port = connectparams['port']
+    s.timeout = connectparams['timeout']
     s.open()
 
     if s.is_open:
       self.sp = s
 
   def close(self):
+    """
+    Closes down the serial port
+    """
     if self.sp.is_open:
       self.sp.close()
       self.sp = None
 
   def send(self, servo_id, command, data=None):
+    """
+    Send a command to a LewanSoul servo, taking care of the header and
+    checksum calculation for a command packet.
+    """
     self.check_sp()
     packet = [0x55, 0x55]
 
@@ -92,6 +112,10 @@ class lewansoul_wrapper:
     self.sp.write(packet_bytes)
 
   def read_raw(self, length=100):
+    """
+    Reads a stream of bytes from serial device and returns it without any
+    attempts at parsing or validation
+    """
     self.check_sp()
     return bytearray(self.sp.read(length))
 
@@ -164,6 +188,115 @@ class lewansoul_wrapper:
     # Return results in a tuple
     return (rid, rcmd, rparams)
 
+  def version(self, id):
+    """ Identifier string for this motor controller """
+    return "LewanSoul"
+
+  @staticmethod
+  def check_id(id):
+    """ Verifies servo ID is within range and inverted status is boolean"""
+    if not isinstance(id, (tuple,list)):
+      raise ValueError("LewanSoul identifier must be a tuple")
+
+    if not isinstance(id[0], int):
+      raise ValueError("LewanSoul servo address must be an integer")
+
+    if id[0] < 0 or id[0] > 253:
+      raise ValueError("LewanSoul servo address {} outside of valid range 0-253".format(id[0]))
+
+    if not isinstance(id[1], int):
+      raise ValueError("LewanSoul servo center position must be an integer")
+
+    if not isinstance(id[2], bool):
+      raise ValueError("Inverted status must be a boolean")
+
+    return tuple(id)
+
+  def power_percent(self, id, percentage):
+    """ Runs servo in motor mode at specified +/- percentage """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    pct = int(percentage)
+    if abs(pct) > 100:
+      raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
+
+    # LewanSoul API wants power expressed between -1000 and 1000, so multiply by 10.
+    power = percentage*10
+
+    if inverted:
+      power = power * -1
+
+    self.send(sid, 29, bytearray(pack('hh',1,power)))
+
+  def set_max_current(self, id, current):
+    """ LewanSoul does not support overpower protection. """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    # Does nothing
+
+  def init_velocity(self, id):
+    """ Sets LewanSoul into motor mode and speed zero """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 29, bytearray(pack('hh',1,0)))
+
+  def velocity(self,id,pct_velocity):
+    """
+    Runs the specified servo in motor mode at specified velocity
+    In case of LewanSoul servos, it is the same as power_percent.
+    """
+    self.power_percent(id,pct_velocity)
+
+  def init_angle(self, id):
+    """
+    Sets the LewanSoul into servo mode and move to center over 2 seconds
+    """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 29, (0,0,0,0)) # Servo mode
+    self.send(sid, 1, bytearray(pack('hh', center, 2000)))
+
+  def maxangle(self, id):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    return 120
+
+  def angle(self, id, angle):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    if abs(angle) > 95:
+      raise ValueError("Steering angle {} exceeded expected maximum of 90".format(angle))
+
+    delta = angle * (500.0/120.0) # 500 count/ 120 degrees = counts per degree.
+
+    if inverted:
+      delta = delta * -1
+
+    self.send(sid, 29, (0,0,0,0)) # Servo mode
+    self.send(sid, 1, bytearray(pack('hh', center+delta, 200)))
+
+  def steer_setzero(self, id):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    # TODO: Support live adjustment
+
+  def input_voltage(self, id):
+    """
+    Query LewanSoul servo's internal voltage monitor
+    """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 27)
+    (sid, cmd, params) = self.read_parsed(length=8, expectedcmd=27, expectedparams=2)
+    millivolts = unpack('h', params)[0]
+
+    return millivolts/1000.0
+
 if __name__ == "__main__":
   """
   Command line interface to work with LewanSoul serial bus servos.
@@ -174,7 +307,6 @@ if __name__ == "__main__":
   * Rename servo to another ID
   * Unload and power down motors
   """
-  from struct import *
   import argparse
 
   parser = argparse.ArgumentParser(description="LewanSoul Serial Servo Command Line Utility")
@@ -187,6 +319,7 @@ if __name__ == "__main__":
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
   group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
+  group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
   args = parser.parse_args()
 
   c = lewansoul_wrapper()
@@ -238,10 +371,13 @@ if __name__ == "__main__":
       c.send(args.id, 29, bytearray(pack('hh', 1, args.spin)))
   elif args.unload:
     c.send(args.id, 31, (0,))
+  elif args.voltage:
+    c.send(args.id, 27)
+    (sid, cmd, params) = c.read_parsed(length=8, expectedcmd=27, expectedparams=2)
+    voltage = unpack('h', params)[0]
+    print("Servo {} reports input voltage of {}".format(sid, voltage/1000.0))
   else:
     # None of the actions were specified? Show help screen.
     parser.print_help()
-
-  # c.send(0x01, 29, (1, 0, 0x0, 0x00)) # Turn using motor mode. 0x3E8 (0xE8 0x03) for full speed
 
   c.close()
