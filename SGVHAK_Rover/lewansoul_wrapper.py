@@ -165,6 +165,15 @@ class lewansoul_wrapper:
     return (rid, rcmd, rparams)
 
 if __name__ == "__main__":
+  """
+  Command line interface to work with LewanSoul serial bus servos.
+  Implements a subset of the servo's functionality
+  * Move to position over time. (Servo mode)
+  * Spin at a specified speed. (Motor mode)
+  * Broadcast query for servo ID
+  * Rename servo to another ID
+  * Unload and power down motors
+  """
   from struct import *
   import argparse
 
@@ -176,6 +185,7 @@ if __name__ == "__main__":
   group.add_argument("-m", "--move", help="Move servo to specified position 0-1000", type=int)
   group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
+  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   args = parser.parse_args()
 
@@ -184,9 +194,9 @@ if __name__ == "__main__":
 
   if args.move != None: # Explicit check against None because zero is a valid value
     if args.move < 0 or args.move > 1000:
-      print("Servo move destination {} is outside valid range of 0-1000".format(args.move))
+      print("Servo move destination {} is outside valid range of 0 to 1000 (1000 = 240 degrees)".format(args.move))
     elif args.time < 0 or args.time > 30000:
-      print("Servo move time duration {} is outside valid range of 0-30000".format(args.time))
+      print("Servo move time duration {} is outside valid range of 0 to 30000 milliseconds".format(args.time))
     else:
       print("Moving servo {} to position {}".format(args.id, args.move))
       c.send(args.id, 29, (0,0,0,0)) # Turn on servo mode (in case it was previously in motor mode)
@@ -220,6 +230,12 @@ if __name__ == "__main__":
           print("Querying for response from ID {} failed, we got answer from ID {}/{} instead.".format(args.rename, sid, params[0]))
         else:
           print("Servo successfully renamed to ID {}".format(args.rename))
+  elif args.spin != None: # Zero is a valid parameter.
+    if args.spin < -1000 or args.move > 1000:
+      print("Servo spin speed {} is outside valid range of -1000 to 1000".format(args.move))
+    else:
+      print("Spinning motor of servo {} at rate of {}".format(args.id, args.spin))
+      c.send(args.id, 29, bytearray(pack('hh', 1, args.spin)))
   elif args.unload:
     c.send(args.id, 31, (0,))
   else:
