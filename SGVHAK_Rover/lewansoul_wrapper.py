@@ -165,20 +165,33 @@ class lewansoul_wrapper:
     return (rid, rcmd, rparams)
 
 if __name__ == "__main__":
+  from struct import *
   import argparse
 
   parser = argparse.ArgumentParser(description="LewanSoul Serial Servo Command Line Utility")
 
   parser.add_argument("-id", "--id", help="Servo identifier integer 0-253. 254 is broadcast ID.", type=int, default=1)
+  parser.add_argument("-t", "--time", help="Time duration for action", type=int, default=0)
   group = parser.add_mutually_exclusive_group()
+  group.add_argument("-m", "--move", help="Move servo to specified position 0-1000", type=int)
   group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
+  group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   args = parser.parse_args()
 
   c = lewansoul_wrapper()
   c.connect()
 
-  if args.queryid:
+  if args.move != None: # Explicit check against None because zero is a valid value
+    if args.move < 0 or args.move > 1000:
+      print("Servo move destination {} is outside valid range of 0-1000".format(args.move))
+    elif args.time < 0 or args.time > 30000:
+      print("Servo move time duration {} is outside valid range of 0-30000".format(args.time))
+    else:
+      print("Moving servo {} to position {}".format(args.id, args.move))
+      c.send(args.id, 29, (0,0,0,0)) # Turn on servo mode (in case it was previously in motor mode)
+      c.send(args.id, 1, bytearray(pack('hh', args.move, args.time)))
+  elif args.queryid:
     print("Broadcasting servo ID query")
     c.send(0xfe, 14) # Broadcast and ask to report ID
     (sid, cmd, params) = c.read_parsed(length=7, expectedcmd=14, expectedparams=1)
@@ -207,12 +220,12 @@ if __name__ == "__main__":
           print("Querying for response from ID {} failed, we got answer from ID {}/{} instead.".format(args.rename, sid, params[0]))
         else:
           print("Servo successfully renamed to ID {}".format(args.rename))
+  elif args.unload:
+    c.send(args.id, 31, (0,))
   else:
     # None of the actions were specified? Show help screen.
     parser.print_help()
 
   # c.send(0x01, 29, (1, 0, 0x0, 0x00)) # Turn using motor mode. 0x3E8 (0xE8 0x03) for full speed
-  # c.send(0x01, 29, (0, 0, 0, 0)) # Return to servo mode
-  # c.send(0x01, 1, (0xF4, 0x01, 0, 4)) # Move to position over time. 0=0, 30=0x7D, 120=0x1F4, 210=0x36b, 240 = 0x3E8
 
   c.close()
