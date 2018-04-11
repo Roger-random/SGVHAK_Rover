@@ -26,6 +26,7 @@ import logging
 import configuration
 import roboclaw_wrapper
 import adafruit_servo_wrapper
+import lewansoul_wrapper
 
 # Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
 infinity = float("inf")
@@ -188,6 +189,13 @@ class chassis:
       self.motorcontrollers['adafruit_servo'] = asw
     except StandardError as se:
       logging.getLogger(__name__).error("Unable to initialize Adafruit Servo HAT library: %s",str(se))
+
+    try:
+      lws = lewansoul_wrapper.lewansoul_wrapper()
+      lws.connect()
+      self.motorcontrollers['lewansoul'] = lws
+    except StandardError as se:
+      logging.getLogger(__name__).error("Unable to initialize LewanSoul Servo Library: %s",str(se))
 
   def ensureready(self):
     """
