@@ -119,7 +119,84 @@ class dynamixel_wrapper:
     self.check_sp()
     return bytearray(self.sp.read(length))
 
+  def read_parsed(self, length=100, expectedid=None, expectederr=None, expectedparams=None):
+    """
+    Reads up to 'length' bytes and parse it according to pack format spec
+    from Robotis e-Manual
+    http://emanual.robotis.com/docs/en/dxl/protocol1/#status-packet
+    http://support.robotis.com/en/techsupport_eng.htm#product/actuator/dynamixel/ax_series/dxl_ax_actuator.htm
+
+    0     1     2     3     4     [ ... ]
+    0xFF  0xFF  ID    Len   Err   Param1... ParamN  Checksum
+
+    Length of data is number of parameters plus checksum.
+    Packet with no parameters has length of 2 bytes, plus header+ID+Length = 6 bytes total.
+    Checksum = (~(ID+Length+Err+Param1+...+ParamN)) & 0xFF
+
+    - -
+
+    Optional parameters:
+      expectedid = if provided, will check message ID against expected ID.
+      expectedcmd = if provided, will check message command against expected command.
+      expectedparams = if provided, will check the number of bytes in parameter matches expected.
+
+      If a mismatch is found, a ValueError is raised.
+    """
+    self.check_sp()
+    r = bytearray(self.sp.read(length))
+
+    # Check response length
+    if len(r) < 6:
+      raise ValueError("Need at least 6 bytes for a valid packet, received {}".format(len(r)))
+
+    # Check header
+    if r[0] != 0xFF or r[1] != 0xFF:
+      raise ValueError("Response header is {:02x} {:02x}, expected 0xFF 0xFF".format(r[0], r[1]))
+
+    # Verify length
+    rlen = r[3]
+    if rlen+4 != len(r):
+      raise ValueError("Packet claims to have {} bytes of data + 4 bytes of header, but we retrieved {} bytes.".format(rlen, len(r)))
+
+    # Verify checksum
+    checksum = 0
+    for b in r[2:-1]:
+      checksum = checksum + b
+    checksum = (~checksum) & 0xFF
+
+    if checksum != r[-1]:
+      raise ValueError("Packet checksum {} does not match calculated checksum {}".format(r[-1], checksum))
+
+    # If an expected ID is given, compare against ID in the message.
+    rid = r[2]
+    if expectedid and expectedid != rid:
+      raise ValueError("Response stamped with ID {}, expected {}".format(rid, expectedid))
+
+    # If an expected error is given, compare against error in the message.
+    rerr = r[4]
+    if expectederr and expectederr != rerr:
+      raise ValueError("Response error {}, expected {}".format(rerr, expectederr))
+
+    # Examine parameters, if any.
+    if rlen > 2:
+      rparams = bytearray(r[5:-1])
+      if expectedparams and expectedparams != len(rparams):
+        raise ValueError("Received {} bytes of parameters, expected {}".format(len(rparams),expectedparams))
+    else:
+      rparams = None
+      if expectedparams and expectedparams != 0:
+        raise ValueError("Received {} bytes of parameters, expected none".format(len(rparams)))
+
+    # Return results in a tuple
+    return (rid, rerr, rparams)
+
   def version(self, id):
     """ Identifier string for this motor controller """
     return "Dynamixel"
 
+
+if __name__ == "__main__":
+  dw = dynamixel_wrapper()
+  dw.connect()
+  dw.send(0xfe,1)
+  print(dw.read_parsed())
