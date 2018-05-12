@@ -194,6 +194,113 @@ class dynamixel_wrapper:
     """ Identifier string for this motor controller """
     return "Dynamixel"
 
+  @staticmethod
+  def check_id(id):
+    """ Verifies servo ID is within range and inverted status is boolean"""
+    if not isinstance(id, (tuple,list)):
+      raise ValueError("Dynamixel identifier must be a tuple")
+
+    if not isinstance(id[0], int):
+      raise ValueError("Dynamixel servo address must be an integer")
+
+    if id[0] < 0 or id[0] > 253:
+      raise ValueError("Dynamixel servo address {} outside of valid range 0-253".format(id[0]))
+
+    if not isinstance(id[1], int):
+      raise ValueError("Dynamixel servo center position must be an integer")
+
+    if not isinstance(id[2], bool):
+      raise ValueError("Inverted status must be a boolean")
+
+    return tuple(id)
+
+  def power_percent(self, id, percentage):
+    """ Runs servo in motor mode at specified +/- percentage """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    if inverted:
+      percentage = percentage * -1
+
+    pct = int(percentage)
+    if abs(pct) > 100:
+      raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
+
+    # Dynamixel API wants power expressed from 0 to 2047. 0-1023 CCW, 1024-2047 CW
+    power = abs(percentage)*1023/100
+
+    if percentage >= 0:
+      power = power + 1024
+
+    self.send(sid, 3, bytearray(pack('=Bh',32, power)))
+    self.read_parsed(length=6, expectedid=sid, expectederr=0, expectedparams=0)
+
+  def set_max_current(self, id, current):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    # Does nothing
+
+  def init_velocity(self, id):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 3, bytearray(pack('=Bhh',6, 0, 0))) # Make sure we're in wheel mode
+    self.read_parsed(length=6, expectedid=sid, expectederr=0, expectedparams=0)
+
+  def velocity(self,id,pct_velocity):
+    """
+    Runs the specified servo in motor mode at specified velocity
+    In case of Dynamixel servos, it is the same as power_percent.
+    """
+    self.power_percent(id,pct_velocity)
+
+  def init_angle(self, id):
+    """
+    Sets the Dynamixel into servo position mode
+    """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 3, bytearray(pack('=Bhh',6, 0, 1023))) # Make sure we're in joint mode
+    self.read_parsed(length=6, expectedid=sid, expectederr=0, expectedparams=0)
+
+  def maxangle(self, id):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    return 150
+
+  def angle(self, id, angle):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    if abs(angle) > 95:
+      raise ValueError("Steering angle {} exceeded expected maximum of 90".format(angle))
+
+    if inverted:
+      angle = angle * -1
+
+    delta = 512 + 511*(angle/150.0) # 512 count/ 150 degrees = counts per degree.
+
+    self.send(sid, 3, bytearray(pack('=Bhh',30, delta, 0)))
+    self.read_parsed(length=6, expectedid=sid, expectederr=0, expectedparams=0)
+
+  def steer_setzero(self, id):
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+    # TODO: Support live adjustment
+
+  def input_voltage(self, id):
+    """
+    Query Dynamixel servo's internal voltage monitor
+    """
+    sid, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(sid, 2, (42,1))
+    (sid, err, params) = self.read_parsed(length=7,expectedid=sid, expectederr=0, expectedparams=1)
+    voltage = params[0]
+
+    return voltage/10.0
 
 if __name__ == "__main__":
   """
@@ -237,9 +344,9 @@ if __name__ == "__main__":
         speedarg = "controlled speed {}".format(args.speed)
       print("Moving servo {} to position {} at {}".format(args.id, args.move, speedarg))
       c.send(args.id, 3, bytearray(pack('=Bhh',6, 0, 1023))) # Make sure we're in joint mode
-      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
       c.send(args.id, 3, bytearray(pack('=Bhh',30, args.move, args.speed)))
-      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.queryid:
     print("Broadcasting servo ID query")
     c.send(0xfe, 1) # Broadcast and ask to report ID
@@ -260,7 +367,7 @@ if __name__ == "__main__":
       else:
         print("Renaming servo ID {} to {}".format(args.id, args.rename))
         c.send(args.id, 3, bytearray(pack('=BB', 3,args.rename)))
-        c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+        c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
         print("Verifying the servo now answers to new ID")
         c.send(args.rename, 1)
         (sid, cmd, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
@@ -274,25 +381,25 @@ if __name__ == "__main__":
     else:
       print("Spinning motor of servo {} at speed {}".format(args.id, args.spin))
       c.send(args.id, 3, bytearray(pack('=Bhh',6, 0, 0))) # Make sure we're in wheel mode
-      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
       c.send(args.id, 3, bytearray(pack('=Bh',32, args.spin)))
-      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.unload:
     print("Unloading servo ID {}".format(args.id))
     c.send(args.id, 3, (24,0))
-    c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+    c.read_parsed(length=6, expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.reset:
     print("Reset servo ID {} to factory defaults".format(args.id))
     c.send(args.id, 6, None)
     print(bytetohex(c.read_raw()))
   elif args.voltage:
     c.send(args.id, 2, (42,1))
-    (sid, err, params) = c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=1)
+    (sid, err, params) = c.read_parsed(length=7, expectedid=args.id, expectederr=0, expectedparams=1)
     voltage = params[0]
     print("Servo {} reports input voltage of {}".format(sid, voltage/10.0))
   elif args.location:
     c.send(args.id, 2, (36,2))
-    (sid, err, params) = c.read_parsed(expectedid=args.id)
+    (sid, err, params) = c.read_parsed(length=8, expectedid=args.id)
     position=unpack('h',params)[0]
     print("Servo current locaton {} with err {}".format(position, err))
   else:
