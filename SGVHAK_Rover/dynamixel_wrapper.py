@@ -219,6 +219,7 @@ if __name__ == "__main__":
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
   group.add_argument("-l", "--location", help="Read current locaton.", action="store_true")
+  group.add_argument("-e", "--reset", help="Reset to factory defaults.", action="store_true")
   args = parser.parse_args()
 
   c = dynamixel_wrapper()
@@ -280,6 +281,10 @@ if __name__ == "__main__":
     print("Unloading servo ID {}".format(args.id))
     c.send(args.id, 3, (24,0))
     c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+  elif args.reset:
+    print("Reset servo ID {} to factory defaults".format(args.id))
+    c.send(args.id, 6, None)
+    print(bytetohex(c.read_raw()))
   elif args.voltage:
     c.send(args.id, 2, (42,1))
     (sid, err, params) = c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=1)
