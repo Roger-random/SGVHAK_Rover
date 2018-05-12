@@ -169,12 +169,12 @@ class dynamixel_wrapper:
 
     # If an expected ID is given, compare against ID in the message.
     rid = r[2]
-    if expectedid and expectedid != rid:
+    if expectedid != None and expectedid != rid:
       raise ValueError("Response stamped with ID {}, expected {}".format(rid, expectedid))
 
     # If an expected error is given, compare against error in the message.
     rerr = r[4]
-    if expectederr and expectederr != rerr:
+    if expectederr != None and expectederr != rerr:
       raise ValueError("Response error {}, expected {}".format(rerr, expectederr))
 
     # Examine parameters, if any.
@@ -210,9 +210,9 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Dynamixel Serial Servo Command Line Utility")
 
   parser.add_argument("-id", "--id", help="Servo identifier integer 0-253. 254 is broadcast ID.", type=int, default=1)
-  parser.add_argument("-t", "--time", help="Time duration for action", type=int, default=0)
+  parser.add_argument("-p", "--speed", help="Speed for move (0-1023) 0=max uncontrolled 1=slowest controlled 1023=fastest controlled", type=int, default=0)
   group = parser.add_mutually_exclusive_group()
-  group.add_argument("-m", "--move", help="Move servo to specified position 0-1000", type=int)
+  group.add_argument("-m", "--move", help="Move servo to specified position 0-1023", type=int)
   group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
   group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
@@ -223,7 +223,20 @@ if __name__ == "__main__":
   c = dynamixel_wrapper()
   c.connect()
 
-  if args.queryid:
+  if args.move != None: # Explicit check against None because zero is a valid value
+    if args.move < 0 or args.move > 1023:
+      print("Servo move destination {} is outside valid range of 0 to 1023 (1023 = 300 degrees)".format(args.move))
+    elif args.speed < 0 or args.speed > 1023:
+      print("Servo move speed {} is outside valid range of 0 to 1023 milliseconds".format(args.speed))
+    else:
+      if args.speed == 0:
+        speedarg = "max uncontrolled speed"
+      else:
+        speedarg = "controlled speed {}".format(args.speed)
+      print("Moving servo {} to position {} at {}".format(args.id, args.move, speedarg))
+      c.send(args.id, 3, bytearray(pack('=Bhh',0x1E, args.move, args.speed)))
+      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+  elif args.queryid:
     print("Broadcasting servo ID query")
     if args.id:
       queryid = args.id
@@ -234,7 +247,7 @@ if __name__ == "__main__":
     print("Servo ID {} responded to query".format(sid))
   elif args.unload:
     print("Unloading servo ID {}".format(args.id))
-    c.send(args.id, 2, (24,0))
+    c.send(args.id, 3, (24,0))
     c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.voltage:
     c.send(args.id, 2, (42,1))
