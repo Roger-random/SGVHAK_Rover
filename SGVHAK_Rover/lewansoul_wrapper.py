@@ -167,22 +167,22 @@ class lewansoul_wrapper:
 
     # If an expected ID is given, compare against ID in the message.
     rid = r[2]
-    if expectedid and expectedid != rid:
+    if expectedid != None and expectedid != rid:
       raise ValueError("Response stamped with ID {}, expected {}".format(rid, expectedid))
 
     # If an expected command is given, compare against command in the message.
     rcmd = r[4]
-    if expectedcmd and expectedcmd != rcmd:
+    if expectedcmd != None and expectedcmd != rcmd:
       raise ValueError("Response command {}, expected {}".format(rcmd, expectedcmd))
 
     # Examine parameters, if any.
     if rlen > 3:
       rparams = bytearray(r[5:-1])
-      if expectedparams and expectedparams != len(rparams):
+      if expectedparams != None and expectedparams != len(rparams):
         raise ValueError("Received {} bytes of parameters, expected {}".format(len(rparams),expectedparams))
     else:
       rparams = None
-      if expectedparams and expectedparams != 0:
+      if expectedparams != None and expectedparams != 0:
         raise ValueError("Received {} bytes of parameters, expected none".format(len(rparams)))
 
     # Return results in a tuple
@@ -317,7 +317,7 @@ if __name__ == "__main__":
   group.add_argument("-m", "--move", help="Move servo to specified position 0-1000", type=int)
   group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
-  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
+  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed from -1000 to 1000", type=int)
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
   args = parser.parse_args()
@@ -364,8 +364,8 @@ if __name__ == "__main__":
         else:
           print("Servo successfully renamed to ID {}".format(args.rename))
   elif args.spin != None: # Zero is a valid parameter.
-    if args.spin < -1000 or args.move > 1000:
-      print("Servo spin speed {} is outside valid range of -1000 to 1000".format(args.move))
+    if args.spin < -1000 or args.spin > 1000:
+      print("Servo spin speed {} is outside valid range of -1000 to 1000".format(args.spin))
     else:
       print("Spinning motor of servo {} at rate of {}".format(args.id, args.spin))
       c.send(args.id, 29, bytearray(pack('hh', 1, args.spin)))
