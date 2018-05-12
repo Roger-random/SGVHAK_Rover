@@ -196,7 +196,44 @@ class dynamixel_wrapper:
 
 
 if __name__ == "__main__":
-  dw = dynamixel_wrapper()
-  dw.connect()
-  dw.send(0xfe,1)
-  print(dw.read_parsed())
+  """
+  Command line interface to work with serial bus servos.
+  Implements a subset of the servo's functionality
+  * Move to position over time. (Servo mode)
+  * Spin at a specified speed. (Motor mode)
+  * Broadcast query for servo ID
+  * Rename servo to another ID
+  * Unload and power down motors
+  """
+  import argparse
+
+  parser = argparse.ArgumentParser(description="Dynamixel Serial Servo Command Line Utility")
+
+  parser.add_argument("-id", "--id", help="Servo identifier integer 0-253. 254 is broadcast ID.", type=int, default=1)
+  parser.add_argument("-t", "--time", help="Time duration for action", type=int, default=0)
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument("-m", "--move", help="Move servo to specified position 0-1000", type=int)
+  group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
+  group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
+  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
+  group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
+  group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
+  args = parser.parse_args()
+
+  c = dynamixel_wrapper()
+  c.connect()
+
+  if args.queryid:
+    print("Broadcasting servo ID query")
+    if args.id:
+      queryid = args.id
+    else:
+      queryid = 0xfe # User broadcast ID
+    c.send(queryid, 1) # Broadcast and ask to report ID
+    (sid, err, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
+    print("Servo ID {} responded to query".format(sid))
+  else:
+    # None of the actions were specified? Show help screen.
+    parser.print_help()
+
+  c.close()
