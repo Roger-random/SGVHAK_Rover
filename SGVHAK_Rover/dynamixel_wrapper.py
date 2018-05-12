@@ -241,13 +241,32 @@ if __name__ == "__main__":
       c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.queryid:
     print("Broadcasting servo ID query")
-    if args.id:
-      queryid = args.id
-    else:
-      queryid = 0xfe # User broadcast ID
-    c.send(queryid, 1) # Broadcast and ask to report ID
+    c.send(0xfe, 1) # Broadcast and ask to report ID
     (sid, err, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
     print("Servo ID {} responded to query".format(sid))
+  elif args.rename:
+    print("Checking the specified servo ID {} is on the serial network.".format(args.id))
+    c.send(args.id, 1) # Ask for current servo ID
+    (sid, err, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
+    if sid != args.id:
+      print("Unexpected answer from servo {} when verifying servo {} is on the network.".format(sid, args.id))
+    else:
+      print("Checking the specified destination servo ID {} is not already taken.".format(args.rename))
+      c.send(args.rename, 1)
+      expectempty=c.read_raw()
+      if len(expectempty) > 0:
+        raise ValueError("Someone answers to servo ID {} on the network, rename aborted.".format(args.rename))
+      else:
+        print("Renaming servo ID {} to {}".format(args.id, args.rename))
+        c.send(args.id, 3, bytearray(pack('=BB', 3,args.rename)))
+        c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+        print("Verifying the servo now answers to new ID")
+        c.send(args.rename, 1)
+        (sid, cmd, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
+        if sid != args.rename:
+          print("Querying for response from ID {} failed, we got answer from ID {}/{} instead.".format(args.rename, sid))
+        else:
+          print("Servo successfully renamed to ID {}".format(args.rename))
   elif args.spin != None: # Zero is a valid parameter
     if args.spin < 0 or args.spin > 2047:
       print("Servo spin speed {} is outside valid range of 0 to 2047".format(args.spin))
