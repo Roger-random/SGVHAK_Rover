@@ -215,7 +215,7 @@ if __name__ == "__main__":
   group.add_argument("-m", "--move", help="Move servo to specified position 0-1023", type=int)
   group.add_argument("-q", "--queryid", help="Query for servo ID", action="store_true")
   group.add_argument("-r", "--rename", help="Rename servo identifier", type=int)
-  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed", type=int)
+  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed from 0 to 2047", type=int)
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
   args = parser.parse_args()
@@ -227,14 +227,16 @@ if __name__ == "__main__":
     if args.move < 0 or args.move > 1023:
       print("Servo move destination {} is outside valid range of 0 to 1023 (1023 = 300 degrees)".format(args.move))
     elif args.speed < 0 or args.speed > 1023:
-      print("Servo move speed {} is outside valid range of 0 to 1023 milliseconds".format(args.speed))
+      print("Servo move speed {} is outside valid range of 0 to 1023".format(args.speed))
     else:
       if args.speed == 0:
         speedarg = "max uncontrolled speed"
       else:
         speedarg = "controlled speed {}".format(args.speed)
       print("Moving servo {} to position {} at {}".format(args.id, args.move, speedarg))
-      c.send(args.id, 3, bytearray(pack('=Bhh',0x1E, args.move, args.speed)))
+      c.send(args.id, 3, bytearray(pack('=Bhh',6, 0, 1023))) # Make sure we're in joint mode
+      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.send(args.id, 3, bytearray(pack('=Bhh',30, args.move, args.speed)))
       c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.queryid:
     print("Broadcasting servo ID query")
@@ -245,6 +247,15 @@ if __name__ == "__main__":
     c.send(queryid, 1) # Broadcast and ask to report ID
     (sid, err, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
     print("Servo ID {} responded to query".format(sid))
+  elif args.spin != None: # Zero is a valid parameter
+    if args.spin < 0 or args.spin > 2047:
+      print("Servo spin speed {} is outside valid range of 0 to 2047".format(args.spin))
+    else:
+      print("Spinning motor of servo {} at speed {}".format(args.id, args.spin))
+      c.send(args.id, 3, bytearray(pack('=Bhh',6, 0, 0))) # Make sure we're in wheel mode
+      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
+      c.send(args.id, 3, bytearray(pack('=Bh',32, args.spin)))
+      c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.unload:
     print("Unloading servo ID {}".format(args.id))
     c.send(args.id, 3, (24,0))
