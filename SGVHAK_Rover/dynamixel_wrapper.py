@@ -218,6 +218,7 @@ if __name__ == "__main__":
   group.add_argument("-s", "--spin", help="Spin the motor at a specified speed from 0 to 2047", type=int)
   group.add_argument("-u", "--unload", help="Power down servo motor", action="store_true")
   group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
+  group.add_argument("-l", "--location", help="Read current locaton.", action="store_true")
   args = parser.parse_args()
 
   c = dynamixel_wrapper()
@@ -265,6 +266,11 @@ if __name__ == "__main__":
     (sid, err, params) = c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=1)
     voltage = params[0]
     print("Servo {} reports input voltage of {}".format(sid, voltage/10.0))
+  elif args.location:
+    c.send(args.id, 2, (36,2))
+    (sid, err, params) = c.read_parsed(expectedid=args.id)
+    position=unpack('h',params)[0]
+    print("Servo current locaton {} with err {}".format(position, err))
   else:
     # None of the actions were specified? Show help screen.
     parser.print_help()
