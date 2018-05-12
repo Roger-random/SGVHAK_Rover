@@ -232,6 +232,10 @@ if __name__ == "__main__":
     c.send(queryid, 1) # Broadcast and ask to report ID
     (sid, err, params) = c.read_parsed(length=6, expectederr=0, expectedparams=0)
     print("Servo ID {} responded to query".format(sid))
+  elif args.unload:
+    print("Unloading servo ID {}".format(args.id))
+    c.send(args.id, 2, (24,0))
+    c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=0)
   elif args.voltage:
     c.send(args.id, 2, (42,1))
     (sid, err, params) = c.read_parsed(expectedid=args.id, expectederr=0, expectedparams=1)
