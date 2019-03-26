@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import serial
-from struct import *
+import struct
 
 import configuration
 
@@ -105,8 +105,8 @@ class dmfe_wrapper:
       checksum = checksum ^ packet[i]
     packet.append(checksum)
 
-    print(packet)
-    # Hold off until we get back to hardware. self.sp.write(packet)
+    print(bytetohex(packet))
+    self.sp.write(packet)
 
   def read_raw(self, length=100):
     """
@@ -126,7 +126,7 @@ class dmfe_wrapper:
     if len(r) == 0:
       raise ValueError("Expected single byte 0xFF in response but received no data.")
 
-    if r[0] != b'\xFF':
+    if r[0] != 255:
       raise ValueError("Expected 0xFF in response but got {}".format(r[0]))
 
   def read_dmfeserialservo(self):
@@ -137,10 +137,29 @@ class dmfe_wrapper:
     r = self.sp.read(18).decode('utf-8')
 
     if len(r) == 0:
-      raise ValueError("Expected 'DMFE Serial Servo' but received no data.")
+      raise ValueError("Expected DMFE identification string but received no data.")
+
+    if r == 'DMFE Serial Brushe':
+      raise ValueError("Expected device to be serial servo but is serial brushed controller.")
 
     if r != 'DMFE Serial Servo\n':
       raise ValueError("Expected 'DMFE Serial Servo' but received {}".format(r))
+
+  def read_dmfeserialbrushed(self):
+    """
+    We expect a device identifier string
+    """
+    self.check_sp()
+    r = self.sp.read(20).decode('utf-8')
+
+    if len(r) == 0:
+      raise ValueError("Expected DMFE identification string but received no data.")
+
+    if r == 'DMFE Serial Servo\n':
+      raise ValueError("Expected device to be serial brushed but is serial servo.")
+
+    if r != 'DMFE Serial Brushed\n':
+      raise ValueError("Expected 'DMFE Serial Brushed' but received {}".format(r))
 
   def read_datapacket(self, expectedid):
     """
@@ -154,17 +173,17 @@ class dmfe_wrapper:
     if len(r) != 7:
       raise ValueError("Expected data packet of 7 bytes but received only {}".format(len(r)))
     
-    if r[0] != expectedid:
+    if self.bytes_to_int(r[0]) != expectedid:
       raise ValueError("Expected data packet from device {} but received from {}".format(expectedid, r[0]))
     
-    if r[1] != 1:
+    if self.bytes_to_int(r[1]) != 1:
       raise ValueError("Expected data packet for master id 1 but received ID {}".format(r[1]))
 
     checksum = 0
     for i in range (0,6):
-      checksum = checksum ^ r[i]
+      checksum = checksum ^ self.bytes_to_int(r[i])
 
-    if checksum != r[6]:
+    if checksum != self.bytes_to_int(r[6]):
       raise ValueError("Calculated checksum of {} does not match transmitted checksum {}".format(checksum,r[6]))
 
     return r[2:6]
@@ -194,6 +213,10 @@ class dmfe_wrapper:
     return tuple(id)
 
   @staticmethod
+  def bytes_to_int(bytes):
+    return int(bytes.encode('hex'), 16)
+
+  @staticmethod
   def data1byte(data):
     """
     Given parameter, pack it into a single byte. Pad remainder with zero
@@ -202,6 +225,16 @@ class dmfe_wrapper:
     data1byte(2) returns b'\x02\x00\x00'
     """
     return struct.pack("b",data) + b'\x00\x00'
+
+  @staticmethod
+  def data2byte(data):
+    """
+    Given parameter, pack it into two bytes. Pad remainder with zero
+    and return three element byte array
+
+    data2byte(1024) returns b'\x00\x04\x00'
+    """
+    return struct.pack("H",data) + b'\x00'
 
   def power_percent(self, id, percentage):
     """ Send brushed motor speed command to device 'id' at specified +/- 'percentage' """
@@ -312,20 +345,24 @@ if __name__ == "__main__":
     if args.move < 0 or args.move > 4096:
       print("Move destination {} is outside valid range of 0 to 4096 (4096 = 360 degrees)".format(args.move))
     else:
+      c.send(args.id,0xaa)
+      c.read_dmfeserialservo()
       print("Moving device {} to position {}".format(args.id, args.move))
-      c.send(args.id, 0x82, self.data2byte(args.move))
+      c.send(args.id, 0x82, c.data2byte(args.move))
       c.read_ack()
   elif args.spin != None: # Zero is a valid parameter
     if args.spin < -50 or args.spin > 50:
       print("Spin speed {} is outside valid range of -50 to 50".format(args.spin))
     else:
+      c.send(args.id,0xaa)
+      c.read_dmfeserialbrushed()
       print("Spinning motor {} at speed {}".format(args.id, args.spin))
       c.send(args.id, 0x87, c.data1byte(args.spin))
       c.read_ack()
   elif args.voltage:
       c.send(args.id, 0x96)
       resp = c.read_datapacket(args.id)
-      print("Device {} reports {} which translates to {} volts".format(args.id, resp[0], resp[0]/18))
+      print("Device {} reports {} which translates to {} volts".format(args.id, c.bytes_to_int(resp[0]), c.bytes_to_int(resp[0])/18.8))
   else:
     # None of the actions were specified? Show help screen.
     parser.print_help()
