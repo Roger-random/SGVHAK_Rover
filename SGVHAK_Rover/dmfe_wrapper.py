@@ -105,7 +105,6 @@ class dmfe_wrapper:
       checksum = checksum ^ packet[i]
     packet.append(checksum)
 
-    print(bytetohex(packet))
     self.sp.write(packet)
 
   def read_raw(self, length=100):
@@ -320,7 +319,7 @@ class dmfe_wrapper:
 
     resp = self.read_datapacket(did)
 
-    return resp[0]/18
+    return self.bytes_to_int(resp[0])/18.8
 
 if __name__ == "__main__":
   """
