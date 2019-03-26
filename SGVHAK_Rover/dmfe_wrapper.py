@@ -26,6 +26,8 @@ from struct import *
 
 import configuration
 
+maxangle = 45 # TODO: make this generally configurable
+
 def bytetohex(bytearray):
   """
   Returns hexadecimal string representation of byte array
@@ -202,7 +204,7 @@ class dmfe_wrapper:
     return struct.pack("b",data) + b'\x00\x00'
 
   def power_percent(self, id, percentage):
-    """ Send brushed motor speed command at specified +/- percentage """
+    """ Send brushed motor speed command to device 'id' at specified +/- 'percentage' """
     did, center, inverted = self.check_id(id)
     self.check_sp()
 
@@ -213,11 +215,79 @@ class dmfe_wrapper:
     if abs(pct) > 100:
       raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
 
-    # Initial implementation wheel power maximum is 50
+    # 50 is wheel power maximum of Mr. Blue rover. TBD: Make this general and configurable
     power = (percentage * 50) / 100
 
     self.send(did, 0x87, self.data1byte(power))
     self.read_ack()
+
+  def set_max_current(self, id, current):
+    """ Set maximum current allowed before tripping protection """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+    # Not yet implemented
+
+  def init_velocity(self, id):
+    """ Initialize device at 'id' into velocity mode """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+    # Not applicable to DMFE devices
+  
+  def velocity(self,id,pct_velocity):
+    """
+    Runs the device in motor mode at specified velocity
+    For DMFE brush motor devices, directly translates to power_percent.
+    """
+    self.power_percent(id,pct_velocity)
+
+  def init_angle(self, id):
+    """
+    Sets the device at 'id' into servo position mode
+    """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+    # Not applicable to DMFE devices
+
+  def maxangle(self, id):
+    """
+    Notifies maximum servo angle allowed in angle()
+    """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+    return maxangle
+
+  def angle(self, id, angle):
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    if abs(angle) > maxangle:
+      raise ValueError("Steering angle {} exceeded expected maximum of {}}".format(angle,maxangle))
+
+    if inverted:
+      angle = angle * -1
+
+    position = 2048 + (angle * 4096/360) # 0 min, 2048 center, 4096 max at 360 degrees
+
+    self.send(did, 0x82, self.data2byte(position))
+    self.read_ack()
+
+  def steer_setzero(self, id):
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+    # TODO: Support live adjustment
+
+  def input_voltage(self, id):
+    """
+    Query DMFE controller's internal voltage monitor
+    """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    self.send(did, 0x96)
+
+    resp = self.read_datapacket(did)
+
+    return resp[0]/18
 
 
 
