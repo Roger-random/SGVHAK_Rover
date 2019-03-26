@@ -289,5 +289,45 @@ class dmfe_wrapper:
 
     return resp[0]/18
 
+if __name__ == "__main__":
+  """
+  Command line interface to work with DMFE serial bus devices.
+  Implements a subset of functionality as-needed
+  """
+  import argparse
 
+  parser = argparse.ArgumentParser(description="DMFE Serial Bus Device Command Line Utility")
 
+  parser.add_argument("-id", "--id", help="Device identifier integer 2-253, default is 2.", type=int, default=2)
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument("-m", "--move", help="Move servo to specified position 0-4096", type=int)
+  group.add_argument("-s", "--spin", help="Spin the motor at a specified speed from 0 to 50", type=int)
+  group.add_argument("-v", "--voltage", help="Read current input voltage", action="store_true")
+  args = parser.parse_args()
+
+  c = dmfe_wrapper()
+  c.connect()
+
+  if args.move != None: # Explicit check against None because zero is a valid value
+    if args.move < 0 or args.move > 4096:
+      print("Move destination {} is outside valid range of 0 to 4096 (4096 = 360 degrees)".format(args.move))
+    else:
+      print("Moving device {} to position {}".format(args.id, args.move))
+      c.send(args.id, 0x82, self.data2byte(args.move))
+      c.read_ack()
+  elif args.spin != None: # Zero is a valid parameter
+    if args.spin < -50 or args.spin > 50:
+      print("Spin speed {} is outside valid range of -50 to 50".format(args.spin))
+    else:
+      print("Spinning motor {} at speed {}".format(args.id, args.spin))
+      c.send(args.id, 0x87, c.data1byte(args.spin))
+      c.read_ack()
+  elif args.voltage:
+      c.send(args.id, 0x96)
+      resp = c.read_datapacket(args.id)
+      print("Device {} reports {} which translates to {} volts".format(args.id, resp[0], resp[0]/18))
+  else:
+    # None of the actions were specified? Show help screen.
+    parser.print_help()
+
+  c.close()
