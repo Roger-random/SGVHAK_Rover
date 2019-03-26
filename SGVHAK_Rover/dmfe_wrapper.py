@@ -88,8 +88,8 @@ class dmfe_wrapper:
 
     # Append receiver ID
     if device_id < 2 or device_id > 0xFE:
-      raise ValueError("Device ID {} is out of valid range 0x02 to 0xFE".format(servo_id))
-    packet.append(servo_id)
+      raise ValueError("Device ID {} is out of valid range 0x02 to 0xFE".format(device_id))
+    packet.append(device_id)
 
     # Append command
     packet.append(command) # TBD: need to validate command?
@@ -171,6 +171,53 @@ class dmfe_wrapper:
     """ Identifier string for this motor controller """
     return "DMFE"
   
+  @staticmethod
+  def check_id(id):
+    """ Verifies servo ID is within range and inverted status is boolean"""
+    if not isinstance(id, (tuple,list)):
+      raise ValueError("DMFE identifier must be a tuple")
+
+    if not isinstance(id[0], int):
+      raise ValueError("DMFE device address must be an integer")
+
+    if id[0] < 2 or id[0] > 253:
+      raise ValueError("DMFE device address {} outside of valid range 2-253".format(id[0]))
+
+    if not isinstance(id[1], int):
+      raise ValueError("DMFE device center position must be an integer")
+
+    if not isinstance(id[2], bool):
+      raise ValueError("Inverted status must be a boolean")
+
+    return tuple(id)
+
+  @staticmethod
+  def data1byte(data):
+    """
+    Given parameter, pack it into a single byte. Pad remainder with zero
+    and return three element byte array
+
+    data1byte(2) returns b'\x02\x00\x00'
+    """
+    return struct.pack("b",data) + b'\x00\x00'
+
+  def power_percent(self, id, percentage):
+    """ Send brushed motor speed command at specified +/- percentage """
+    did, center, inverted = self.check_id(id)
+    self.check_sp()
+
+    if inverted:
+      percentage = percentage * -1
+
+    pct = int(percentage)
+    if abs(pct) > 100:
+      raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
+
+    # Initial implementation wheel power maximum is 50
+    power = (percentage * 50) / 100
+
+    self.send(did, 0x87, self.data1byte(power))
+    self.read_ack()
 
 
 
