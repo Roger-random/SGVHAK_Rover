@@ -211,7 +211,7 @@ class chassis:
       dmfe.connect()
       self.motorcontrollers['dmfe'] = dmfe
     except StandardError as se:
-      logging.getLogger(__name__).error("Unable to initialize DMFE serial bus device library: %s",str(sd))
+      logging.getLogger(__name__).error("Unable to initialize DMFE serial bus device library: %s",str(se))
 
   def ensureready(self):
     """
