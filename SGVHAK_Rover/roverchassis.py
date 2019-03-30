@@ -28,6 +28,7 @@ import roboclaw_wrapper
 import adafruit_servo_wrapper
 import lewansoul_wrapper
 import dynamixel_wrapper
+import dmfe_wrapper
 
 # Python 2 does not have a constant for infinity. (Python 3 added math.inf.)
 infinity = float("inf")
@@ -204,6 +205,13 @@ class chassis:
       self.motorcontrollers['dynamixel'] = dms
     except StandardError as se:
       logging.getLogger(__name__).error("Unable to initialize Dynamixel Servo Library: %s",str(se))
+
+    try:
+      dmfe = dmfe_wrapper.dmfe_wrapper()
+      dmfe.connect()
+      self.motorcontrollers['dmfe'] = dmfe
+    except StandardError as se:
+      logging.getLogger(__name__).error("Unable to initialize DMFE serial bus device library: %s",str(se))
 
   def ensureready(self):
     """

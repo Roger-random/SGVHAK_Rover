@@ -1,0 +1,70 @@
+[
+  {
+    "name": "front_left",
+    "rolling": [
+      "dmfe",
+      10,
+      0,
+      true
+    ],
+    "steering": [
+      "dmfe",
+      6,
+      2048,
+      true
+    ],
+    "x": -6.75,
+    "y": 8.3
+  },
+  {
+    "name": "front_right",
+    "rolling": [
+      "dmfe",
+      7,
+      0,
+      false
+    ],
+    "steering": [
+      "dmfe",
+      3,
+      2048,
+      true
+    ],
+    "x": 6.75,
+    "y": 8.3
+  },
+  {
+    "name": "rear_left",
+    "rolling": [
+      "dmfe",
+      9,
+      0,
+      true
+    ],
+    "steering": [
+      "dmfe",
+      5,
+      2048,
+      true
+    ],
+    "x": -6.75,
+    "y": -8.3
+  },
+  {
+    "name": "rear_right",
+    "rolling": [
+      "dmfe",
+      8,
+      0,
+      false
+    ],
+    "steering": [
+      "dmfe",
+      4,
+      2048,
+      true
+    ],
+    "x": 6.75,
+    "y": -8.3
+  }
+]
