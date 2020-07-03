@@ -1,0 +1,74 @@
+[
+  {
+    "name": "front_left",
+    "rolling": [
+      "adafruit_servo",
+      0
+    ],
+    "steering": [
+      "adafruit_servo",
+      1
+    ],
+    "x": -75,
+    "y": 85
+  },
+  {
+    "name": "front_right",
+    "rolling": [
+      "adafruit_servo",
+      2
+    ],
+    "steering": [
+      "adafruit_servo",
+      3
+    ],
+    "x": 75,
+    "y": 85
+  },
+  {
+    "name": "mid_left",
+    "rolling": [
+      "adafruit_servo",
+      4
+    ],
+    "steering": null,
+    "x": -95,
+    "y": 0
+  },
+  {
+    "name": "mid_right",
+    "rolling": [
+      "adafruit_servo",
+      5
+    ],
+    "steering": null,
+    "x": 95,
+    "y": 0
+  },
+  {
+    "name": "rear_left",
+    "rolling": [
+      "adafruit_servo",
+      6
+    ],
+    "steering": [
+      "adafruit_servo",
+      7
+    ],
+    "x": -75,
+    "y": -95
+  },
+  {
+    "name": "rear_right",
+    "rolling": [
+      "adafruit_servo",
+      8
+    ],
+    "steering": [
+      "adafruit_servo",
+      9
+    ],
+    "x": 75,
+    "y": -95
+  }
+]
