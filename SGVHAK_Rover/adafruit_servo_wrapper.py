@@ -128,7 +128,7 @@ class adafruit_servo_wrapper:
     address = self.check_id(id)
     self.check_pwmhat()
 
-    pct = int(percentage)
+    pct = int(pct_velocity)
     if abs(pct) > 100:
       raise ValueError("Motor power percentage {0} outside valid range from 0 to 100.".format(pct))
 
