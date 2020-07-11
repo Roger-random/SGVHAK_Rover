@@ -40,7 +40,7 @@ export FLASK_APP=SGVHAK_Rover
 . venv/bin/activate
 flask run --host=0.0.0.0 &
 ```
-- Configure Pi to be a wireless access point by following instructions at https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
+- Configure Pi to be a wireless access point by following instructions at https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md
 - Once complete, connect to the new Pi-hosted wireless access point and open a web browser (default URL is `http://192.168.4.1:5000`) to use rover UI.
 
 Implementation
